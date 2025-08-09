@@ -1,6 +1,6 @@
 {
   "port": 3100,
-  "appPort": 8001,
+  "appPort": 8081,
   "autoPlugins": true,
   "plugins": []
 }

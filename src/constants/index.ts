@@ -57,3 +57,6 @@ export const APP_INFO = {
   version: '1.0.0',
   description: '모임 단위로 수입/지출을 관리하는 공동 가계부',
 } as const;
+
+
+

@@ -12,6 +12,7 @@ import {
 import { COLORS, SCREEN } from '../constants';
 import { formatCurrency, formatDate, formatDateShort } from '../utils';
 import { Transaction, Group } from '../types';
+import QuickAddModal from '../components/QuickAddModal';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [monthlyTotal, setMonthlyTotal] = useState({ income: 0, expense: 0 });
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
@@ -94,8 +96,47 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
    * 빠른 추가 버튼 클릭 핸들러
    */
   const handleQuickAdd = () => {
-    // TODO: 빠른 추가 모달 열기
-    Alert.alert('빠른 추가', '빠른 추가 기능이 곧 추가됩니다!');
+    setShowQuickAddModal(true);
+  };
+
+  /**
+   * 빠른 추가 저장 핸들러
+   */
+  const handleQuickAddSave = (transaction: {
+    amount: number;
+    type: 'income' | 'expense';
+    categoryId: string;
+    memo: string;
+  }) => {
+    // 새로운 거래 내역 생성
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      amount: transaction.amount,
+      type: transaction.type,
+      categoryId: transaction.categoryId,
+      memo: transaction.memo,
+      date: new Date(),
+      groupId: currentGroup?.id || '1',
+      userId: 'user1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // 기존 거래 내역에 추가
+    setRecentTransactions([newTransaction, ...recentTransactions]);
+
+    // 월별 합계 업데이트
+    if (transaction.type === 'income') {
+      setMonthlyTotal(prev => ({
+        ...prev,
+        income: prev.income + transaction.amount,
+      }));
+    } else {
+      setMonthlyTotal(prev => ({
+        ...prev,
+        expense: prev.expense + transaction.amount,
+      }));
+    }
   };
 
   /**
@@ -198,6 +239,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         {/* 하단 여백 */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* 빠른 기록 모달 */}
+      <QuickAddModal
+        visible={showQuickAddModal}
+        onClose={() => setShowQuickAddModal(false)}
+        onSave={handleQuickAddSave}
+      />
     </View>
   );
 };
