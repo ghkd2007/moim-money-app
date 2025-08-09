@@ -13,6 +13,9 @@ import { COLORS, SCREEN } from '../constants';
 import { formatCurrency, formatDate, formatDateShort } from '../utils';
 import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
+import DailyTransactionModal from '../components/DailyTransactionModal';
+import { transactionService, groupService } from '../services/dataService';
+import { getCurrentUser, logout } from '../services/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +30,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
@@ -40,53 +45,62 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     try {
       setLoading(true);
       
-      // TODO: 실제 데이터 로드 구현
-      // 현재는 더미 데이터로 대체
-      setCurrentGroup({
-        id: '1',
-        name: '우리 가족',
-        description: '가족 공동 가계부',
-        createdBy: 'user1',
-        members: ['user1', 'user2'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      
-      setMonthlyTotal({
-        income: 1500000,
-        expense: 1200000,
-      });
-      
-      setRecentTransactions([
-        {
-          id: '1',
-          amount: 50000,
-          type: 'expense',
-          categoryId: 'food',
-          memo: '저녁 식사',
-          date: new Date(),
-          groupId: '1',
-          userId: 'user1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: '2',
-          amount: 300000,
-          type: 'income',
-          categoryId: 'salary',
-          memo: '용돈',
-          date: new Date(Date.now() - 86400000),
-          groupId: '1',
-          userId: 'user1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ]);
-      
+      const user = getCurrentUser();
+      if (!user) {
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+
+      // 사용자가 속한 그룹 목록 조회 (첫 번째 그룹 사용)
+      const groups = await groupService.getByUser(user.uid);
+      if (groups.length > 0) {
+        const group = groups[0];
+        setCurrentGroup(group);
+
+        // 해당 그룹의 거래 내역 조회
+        const transactions = await transactionService.getByGroup(group.id, 50);
+        setRecentTransactions(transactions);
+
+        // 이번 달 통계 계산
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        
+        const monthlyTransactions = await transactionService.getByMonth(
+          group.id, 
+          currentYear, 
+          currentMonth
+        );
+
+        const income = monthlyTransactions
+          .filter(t => t.type === 'income')
+          .reduce((sum, t) => sum + t.amount, 0);
+        
+        const expense = monthlyTransactions
+          .filter(t => t.type === 'expense')
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        setMonthlyTotal({ income, expense });
+      } else {
+        // 그룹이 없는 경우는 이제 GroupSelectionScreen에서 처리
+        setMonthlyTotal({ income: 0, expense: 0 });
+        setRecentTransactions([]);
+      }
     } catch (error) {
-      console.error('홈 데이터 로드 오류:', error);
-      Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
+      console.error('데이터 로드 실패:', error);
+      
+      // Firebase 연결 실패 시 더미 데이터로 대체
+      setCurrentGroup({
+        id: 'demo',
+        name: '데모 그룹',
+        members: ['demo-user'],
+        createdAt: new Date(),
+      });
+      
+      setMonthlyTotal({ income: 2800000, expense: 820000 });
+      setRecentTransactions([]);
+      
+      Alert.alert('알림', 'Firebase 연결 실패로 데모 모드로 실행됩니다.');
     } finally {
       setLoading(false);
     }
@@ -102,40 +116,66 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   /**
    * 빠른 추가 저장 핸들러
    */
-  const handleQuickAddSave = (transaction: {
+  const handleQuickAddSave = async (transaction: {
     amount: number;
     type: 'income' | 'expense';
     categoryId: string;
     memo: string;
   }) => {
-    // 새로운 거래 내역 생성
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      amount: transaction.amount,
-      type: transaction.type,
-      categoryId: transaction.categoryId,
-      memo: transaction.memo,
-      date: new Date(),
-      groupId: currentGroup?.id || '1',
-      userId: 'user1',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    try {
+      const user = getCurrentUser();
+      if (!user || !currentGroup) {
+        Alert.alert('오류', '로그인이 필요하거나 그룹이 없습니다.');
+        return;
+      }
 
-    // 기존 거래 내역에 추가
-    setRecentTransactions([newTransaction, ...recentTransactions]);
+      // Firebase에 거래 내역 저장
+      const transactionId = await transactionService.create({
+        amount: transaction.amount,
+        type: transaction.type,
+        categoryId: transaction.categoryId,
+        memo: transaction.memo,
+        date: new Date(),
+        groupId: currentGroup.id,
+        userId: user.uid,
+      });
 
-    // 월별 합계 업데이트
-    if (transaction.type === 'income') {
-      setMonthlyTotal(prev => ({
-        ...prev,
-        income: prev.income + transaction.amount,
-      }));
-    } else {
-      setMonthlyTotal(prev => ({
-        ...prev,
-        expense: prev.expense + transaction.amount,
-      }));
+      // 새로운 거래 내역 객체 생성
+      const newTransaction: Transaction = {
+        id: transactionId,
+        amount: transaction.amount,
+        type: transaction.type,
+        categoryId: transaction.categoryId,
+        memo: transaction.memo,
+        date: new Date(),
+        groupId: currentGroup.id,
+        userId: user.uid,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // UI 즉시 업데이트
+      setRecentTransactions([newTransaction, ...recentTransactions]);
+
+      // 월별 합계 업데이트
+      if (transaction.type === 'income') {
+        setMonthlyTotal(prev => ({
+          ...prev,
+          income: prev.income + transaction.amount,
+        }));
+      } else {
+        setMonthlyTotal(prev => ({
+          ...prev,
+          expense: prev.expense + transaction.amount,
+        }));
+      }
+
+      // 모달 닫기
+      setShowQuickAddModal(false);
+      Alert.alert('완료', '거래 내역이 저장되었습니다!');
+    } catch (error) {
+      console.error('거래 내역 저장 실패:', error);
+      Alert.alert('오류', '거래 내역을 저장하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -145,6 +185,35 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const handleGroupSwitch = () => {
     // TODO: 모임 목록 화면으로 이동
     Alert.alert('모임 전환', '모임 전환 기능이 곧 추가됩니다!');
+  };
+
+  /**
+   * 날짜 클릭 핸들러 (거래 내역이 있는 날짜)
+   */
+  const handleDateClick = (date: Date) => {
+    // 해당 날짜에 거래 내역이 있는지 확인
+    const hasTransaction = recentTransactions.some(transaction => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate.toDateString() === date.toDateString();
+    });
+
+    if (hasTransaction) {
+      setSelectedDate(date);
+      setShowDailyModal(true);
+    }
+  };
+
+  /**
+   * 임시 로그아웃 핸들러 (개발용)
+   */
+  const handleLogout = async () => {
+    try {
+      await logout();
+      Alert.alert('로그아웃', '성공적으로 로그아웃되었습니다.');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
+    }
   };
 
   if (loading) {
@@ -165,12 +234,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </Text>
           <Text style={styles.switchIcon}>⌄</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Text style={styles.notificationIcon}>🔔</Text>
-          <View style={styles.notificationBadge}>
-            <Text style={styles.badgeText}>2</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Text style={styles.notificationIcon}>🔔</Text>
+            <View style={styles.notificationBadge}>
+              <Text style={styles.badgeText}>2</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -199,34 +273,78 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </View>
         </View>
 
-        {/* 현재 지출현황 카드 */}
-        <View style={styles.expenseStatusCard}>
-          <View style={styles.expenseHeader}>
-            <Text style={styles.expenseTitle}>현재 지출현황</Text>
-            <Text style={styles.expenseDate}>{formatDate(new Date())}</Text>
-          </View>
-          
-          <Text style={styles.expenseAmount}>
-            {formatCurrency(monthlyTotal.expense)}
-          </Text>
-          
-          <View style={styles.expenseDetails}>
-            <Text style={styles.expenseLabel}>남은 예산</Text>
-            <Text style={styles.remainingBudget}>
-              {formatCurrency(1200000 - monthlyTotal.expense)}
-            </Text>
-          </View>
-        </View>
 
-        {/* 예산 진행률 */}
-        <View style={styles.progressCard}>
-          <Text style={styles.progressTitle}>월 예산 진행률</Text>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '68%' }]} />
+
+        {/* 미니 달력 */}
+        <View style={styles.calendarCard}>
+          <View style={styles.calendarHeader}>
+            <Text style={styles.calendarTitle}>이번 달 거래 현황</Text>
+            <Text style={styles.calendarMonth}>{new Date().getFullYear()}년 {new Date().getMonth() + 1}월</Text>
           </View>
-          <View style={styles.progressInfo}>
-            <Text style={styles.progressText}>68%</Text>
-            <Text style={styles.progressBudget}>₩1,200,000 중 ₩820,000</Text>
+          
+          {/* 요일 헤더 */}
+          <View style={styles.weekHeader}>
+            {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+              <Text key={index} style={styles.weekDay}>{day}</Text>
+            ))}
+          </View>
+          
+          {/* 월간 달력 */}
+          <View style={styles.monthCalendar}>
+            {(() => {
+              const today = new Date();
+              const year = today.getFullYear();
+              const month = today.getMonth();
+              const firstDay = new Date(year, month, 1);
+              const lastDay = new Date(year, month + 1, 0);
+              const startDate = new Date(firstDay);
+              startDate.setDate(startDate.getDate() - firstDay.getDay());
+              
+              const days = [];
+              const endDate = new Date(startDate);
+              endDate.setDate(endDate.getDate() + 34); // 5주
+              
+              for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+                days.push(new Date(date));
+              }
+              
+              return days.map((date, index) => {
+                const isCurrentMonth = date.getMonth() === month;
+                const isToday = date.toDateString() === today.toDateString();
+                // 실제 거래 내역 데이터로 확인
+                const hasTransaction = isCurrentMonth && recentTransactions.some(transaction => {
+                  const transactionDate = new Date(transaction.date);
+                  return transactionDate.toDateString() === date.toDateString();
+                });
+                
+                return (
+                  <TouchableOpacity 
+                    key={index} 
+                    style={styles.miniDayCell}
+                    onPress={() => handleDateClick(date)}
+                    disabled={!hasTransaction}
+                    activeOpacity={hasTransaction ? 0.7 : 1}
+                  >
+                    <View style={[
+                      styles.miniDay,
+                      !isCurrentMonth && styles.otherMonthDay,
+                      isToday && styles.todayMiniCell,
+                    ]}>
+                      <Text style={[
+                        styles.miniDayNumber,
+                        !isCurrentMonth && styles.otherMonthText,
+                        isToday && styles.todayMiniNumber,
+                      ]}>
+                        {date.getDate()}
+                      </Text>
+                      {hasTransaction && (
+                        <View style={styles.miniTransactionDot} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              });
+            })()}
           </View>
         </View>
 
@@ -245,6 +363,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         visible={showQuickAddModal}
         onClose={() => setShowQuickAddModal(false)}
         onSave={handleQuickAddSave}
+      />
+
+      {/* 날짜별 거래 내역 모달 */}
+      <DailyTransactionModal
+        visible={showDailyModal}
+        onClose={() => setShowDailyModal(false)}
+        selectedDate={selectedDate}
+        transactions={recentTransactions}
       />
     </View>
   );
@@ -321,6 +447,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoutButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#EF4444',
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  logoutText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 
   // 스크롤 컨텐츠
   scrollContent: {
@@ -332,6 +474,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 8,
     gap: 12,
   },
   statCard: {
@@ -371,104 +514,97 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // 현재 지출현황 카드
-  expenseStatusCard: {
-    margin: 20,
-    marginTop: 16,
-    padding: 24,
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-  },
-  expenseHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  expenseTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  expenseDate: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  expenseAmount: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.expense,
-    marginBottom: 16,
-  },
-  expenseDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-  },
-  expenseLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  remainingBudget: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.income,
-  },
 
-  // 예산 진행률 카드
-  progressCard: {
+
+  // 미니 달력 카드
+  calendarCard: {
     marginHorizontal: 20,
+    marginTop: 24,
     marginBottom: 20,
     padding: 20,
     backgroundColor: COLORS.surface,
     borderRadius: 16,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  progressTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  progressBar: {
-    height: 10,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 5,
-    marginBottom: 12,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 5,
-  },
-  progressInfo: {
+  calendarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
   },
-  progressText: {
-    fontSize: 18,
+  calendarTitle: {
+    fontSize: 16,
     fontWeight: '700',
+    color: COLORS.text,
+  },
+  calendarMonth: {
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.primary,
   },
-  progressBudget: {
-    fontSize: 14,
+  weekHeader: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  weekDay: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 12,
     color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  monthCalendar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  miniDayCell: {
+    width: '14.28%',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  miniDay: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  otherMonthDay: {
+    backgroundColor: 'transparent',
+  },
+  todayMiniCell: {
+    backgroundColor: '#E8F4FD', // 연한 파스텔 블루
+    borderWidth: 2,
+    borderColor: '#3B82F6', // 테두리로 오늘 날짜 강조
+  },
+  miniDayNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  otherMonthText: {
+    color: COLORS.textSecondary,
+    opacity: 0.5,
+  },
+  todayMiniNumber: {
+    color: '#1E40AF', // 진한 파란색으로 대비 강화
+    fontWeight: '700', // 더 굵게
+  },
+  miniTransactionDot: {
+    position: 'absolute',
+    bottom: 1,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#10B981', // 더 밝은 초록색
+    borderWidth: 1,
+    borderColor: '#FFFFFF', // 흰색 테두리로 대비 강화
   },
 
   // 빠른 기록 버튼
