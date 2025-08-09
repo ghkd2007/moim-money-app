@@ -5,8 +5,7 @@ import { Text } from 'react-native';
 import { COLORS } from '../constants';
 
 import HomeScreen from '../screens/HomeScreen';
-import CalendarScreen from '../screens/CalendarScreen';
-import FamilyStatusScreen from '../screens/FamilyStatusScreen';
+import GroupScreen from '../screens/GroupScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
@@ -44,26 +43,15 @@ const TabNavigator: React.FC = () => {
           ),
         }}
       />
+
       <Tab.Screen
-        name="Calendar"
-        component={CalendarScreen}
+        name="Group"
+        component={GroupScreen}
         options={{
-          tabBarLabel: '달력',
+          tabBarLabel: '모임',
           tabBarIcon: ({ color, focused }) => (
             <Text style={{ fontSize: 20, color }}>
-              {focused ? '📅' : '📅'}
-            </Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="FamilyStatus"
-        component={FamilyStatusScreen}
-        options={{
-          tabBarLabel: '가족현황',
-          tabBarIcon: ({ color, focused }) => (
-            <Text style={{ fontSize: 20, color }}>
-              {focused ? '👨‍👩‍👧‍👦' : '👨‍👩‍👧‍👦'}
+              {focused ? '👥' : '👥'}
             </Text>
           ),
         }}
