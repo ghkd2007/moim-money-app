@@ -7,10 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   FlatList,
+  Alert,
 } from 'react-native';
 import { COLORS } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
 import { Transaction } from '../types';
+import { getCurrentUser } from '../services/authService';
+import { groupService, transactionService } from '../services/dataService';
 
 const CalendarScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,22 +32,24 @@ const CalendarScreen: React.FC = () => {
   const loadCalendarData = async () => {
     try {
       setLoading(true);
-      // TODO: Firebase에서 실제 거래 내역 데이터 로드
-      // const user = getCurrentUser();
-      // if (user) {
-      //   const groups = await groupService.getByUser(user.uid);
-      //   if (groups.length > 0) {
-      //     const year = currentDate.getFullYear();
-      //     const month = currentDate.getMonth() + 1;
-      //     const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
-      //     setTransactions(monthTransactions);
-      //   }
-      // }
       
-      // 임시로 빈 배열 설정 (실제 데이터 연결 전까지)
-      setTransactions([]);
+      const user = getCurrentUser();
+      if (!user) {
+        return;
+      }
+
+      const groups = await groupService.getByUser(user.uid);
+      if (groups.length > 0) {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
+        setTransactions(monthTransactions);
+      } else {
+        setTransactions([]);
+      }
     } catch (error) {
       console.error('달력 데이터 로드 실패:', error);
+      Alert.alert('오류', '거래 내역을 불러올 수 없습니다.');
       setTransactions([]);
     } finally {
       setLoading(false);

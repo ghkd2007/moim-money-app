@@ -81,23 +81,18 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
    */
   const checkPermissionAndLoadMessages = async () => {
     try {
-      console.log('SMS 모달: 권한 확인 및 메시지 로드 시작');
       setLoading(true);
       
       // 그룹별 카테고리 먼저 로드
       await loadGroupCategories();
-      console.log('SMS 모달: 그룹 카테고리 로드 완료');
       
       // 권한 확인
       const permission = await checkSMSPermission();
-      console.log('SMS 모달: 권한 확인 결과:', permission);
       setHasPermission(permission);
       
       if (permission) {
         // SMS 메시지 읽기
-        console.log('SMS 모달: SMS 메시지 읽기 시작');
         const smsMessages = await readSMSMessages();
-        console.log('SMS 모달: 읽은 SMS 메시지 수:', smsMessages.length);
         setMessages(smsMessages);
         
         // 지출 정보 파싱
@@ -108,11 +103,10 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
             expenses.push(parsed);
           }
         }
-        console.log('SMS 모달: 파싱된 지출 수:', expenses.length);
         setParsedExpenses(expenses);
       }
     } catch (error) {
-      console.error('SMS 모달: SMS 로드 실패:', error);
+      console.error('SMS 로드 실패:', error);
       Alert.alert('오류', 'SMS 메시지를 불러올 수 없습니다.');
     } finally {
       setLoading(false);
@@ -170,59 +164,35 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
    * 지출 추가 확인
    */
   const handleExpenseAdd = (expense: ParsedExpense, index: number) => {
-    console.log('SMS 모달: 개별 지출 추가 시작:', expense, '인덱스:', index);
-    console.log('SMS 모달: onExpenseAdd 함수 타입:', typeof onExpenseAdd);
-    console.log('SMS 모달: onExpenseAdd 함수 내용:', onExpenseAdd.toString());
-    
-    // showExpenseConfirmation 호출 전 로그
-    console.log('SMS 모달: showExpenseConfirmation 호출 직전');
-    
     showExpenseConfirmation(
       expense,
       async () => {
-        console.log('SMS 모달: 개별 지출 추가 확인됨 - 콜백 실행 시작');
         try {
-          console.log('SMS 모달: onExpenseAdd 호출 직전');
           // 개별 추가이므로 shouldCloseModal을 false로 전달
           const result = await onExpenseAdd(expense, false);
-          console.log('SMS 모달: onExpenseAdd 호출 완료, 결과:', result);
           
           // 해당 항목을 parsedExpenses에서 제거
-          console.log('SMS 모달: 제거 전 parsedExpenses:', parsedExpenses);
-          console.log('SMS 모달: 제거할 인덱스:', index);
           const updatedExpenses = parsedExpenses.filter((_, i) => i !== index);
-          console.log('SMS 모달: 제거 후 updatedExpenses:', updatedExpenses);
           setParsedExpenses(updatedExpenses);
-          console.log('SMS 모달: 추가된 항목 제거 완료, 남은 항목 수:', updatedExpenses.length);
           
-          // 성공 알림 제거 - 사용자 편의성 향상
-          console.log('SMS 모달: 개별 지출 추가 완료 - 알림 없이 항목만 제거됨');
         } catch (error) {
-          console.error('SMS 모달: 개별 지출 추가 중 오류:', error);
-          console.error('SMS 모달: 오류 상세 정보:', error.message, error.stack);
+          console.error('개별 지출 추가 중 오류:', error);
           Alert.alert('오류', '지출 추가 중 오류가 발생했습니다.');
         }
       },
       () => {
-        console.log('SMS 모달: 개별 지출 추가 취소됨');
         // 취소 시 아무것도 하지 않음
       }
     );
-    
-    // showExpenseConfirmation 호출 후 로그
-    console.log('SMS 모달: showExpenseConfirmation 호출 완료');
   };
 
   /**
    * 모든 지출 일괄 추가
    */
   const handleAddAllExpenses = () => {
-    console.log('SMS 모달: 일괄 추가 시작, 총 지출 수:', parsedExpenses.length);
-    console.log('SMS 모달: onExpenseAdd 함수 타입:', typeof onExpenseAdd);
-    console.log('SMS 모달: onExpenseAdd 함수 내용:', onExpenseAdd.toString());
+    
     
     if (parsedExpenses.length === 0) {
-      console.log('SMS 모달: 파싱된 지출이 없음');
       return;
     }
     
@@ -234,18 +204,13 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
         {
           text: '추가',
           onPress: async () => {
-            console.log('SMS 모달: 일괄 추가 확인됨 - 콜백 실행 시작');
             try {
               // 모든 지출을 순차적으로 추가
               for (let i = 0; i < parsedExpenses.length; i++) {
                 const expense = parsedExpenses[i];
-                console.log('SMS 모달: 지출 추가 중:', expense, '인덱스:', i);
-                console.log('SMS 모달: onExpenseAdd 호출 직전');
                 // 전체 추가이므로 shouldCloseModal을 true로 전달
-                const result = await onExpenseAdd(expense, true);
-                console.log('SMS 모달: 지출 추가 완료, 결과:', result);
+                await onExpenseAdd(expense, true);
               }
-              console.log('SMS 모달: 모든 지출 추가 완료');
               
               // 성공 알림과 함께 바로 모달 닫기 (홈 화면으로 이동)
               Alert.alert(
@@ -255,7 +220,6 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
                   {
                     text: '확인',
                     onPress: () => {
-                      console.log('SMS 모달: 전체 추가 완료 후 모달 닫기');
                       onClose(); // 바로 홈 화면으로 이동
                     }
                   }

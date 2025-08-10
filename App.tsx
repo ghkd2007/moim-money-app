@@ -49,10 +49,8 @@ export default function App() {
 
   // 그룹 선택 완료 핸들러
   const handleGroupSelected = (groupId: string) => {
-    console.log('App.tsx - handleGroupSelected 호출됨:', groupId);
     setCurrentGroupId(groupId);
     setHasGroup(true);
-    console.log('App.tsx - 상태 업데이트 완료');
   };
 
   // 로딩 중 화면
@@ -66,7 +64,7 @@ export default function App() {
     );
   }
 
-  console.log('App.tsx 렌더링 상태:', { user: !!user, hasGroup, currentGroupId });
+
 
   return (
     <SafeAreaView style={styles.container}>

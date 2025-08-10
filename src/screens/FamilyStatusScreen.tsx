@@ -7,10 +7,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { COLORS } from '../constants';
-import { formatCurrency } from '../utils';
-import { User, Transaction } from '../types';
+import { formatCurrency, formatDate } from '../utils';
+import { GroupMember } from '../types';
+import { getCurrentUser } from '../services/authService';
+import { groupService, userService } from '../services/dataService';
 
 interface GroupMember extends User {
   monthlyExpense: number;
@@ -35,19 +38,56 @@ const FamilyStatusScreen: React.FC = () => {
   const loadFamilyStatusData = async () => {
     try {
       setLoading(true);
-      // TODO: Firebase에서 실제 구성원 데이터 로드
-      // const user = getCurrentUser();
-      // if (user) {
-      //   const groups = await groupService.getByUser(user.uid);
-      //   if (groups.length > 0) {
-      //     // 구성원별 통계 데이터 로드 로직
-      //   }
-      // }
       
-      // 임시로 빈 배열 설정 (실제 데이터 연결 전까지)
-      setGroupMembers([]);
+      const user = getCurrentUser();
+      if (!user) {
+        return;
+      }
+
+      const groups = await groupService.getByUser(user.uid);
+      if (groups.length > 0) {
+        const group = groups[0];
+        const memberInfos: GroupMember[] = [];
+        
+        // 그룹 멤버들의 정보와 통계 데이터 로드
+        for (const memberId of group.members) {
+          try {
+            const memberData = await userService.getById(memberId);
+            if (memberData) {
+              // TODO: 실제 거래 내역에서 월별 통계 계산
+              // const monthlyStats = await calculateMonthlyStats(memberId, group.id);
+              
+              memberInfos.push({
+                ...memberData,
+                monthlyExpense: 0, // 실제 데이터로 교체 예정
+                monthlyIncome: 0,  // 실제 데이터로 교체 예정
+                transactionCount: 0, // 실제 데이터로 교체 예정
+                lastTransactionDate: null, // 실제 데이터로 교체 예정
+              });
+            }
+          } catch (error) {
+            console.error(`멤버 ${memberId} 정보 조회 실패:`, error);
+            // 기본 정보만 표시
+            memberInfos.push({
+              uid: memberId,
+              email: null,
+              displayName: `사용자 ${memberId.substring(0, 6)}`,
+              photoURL: null,
+              monthlyExpense: 0,
+              monthlyIncome: 0,
+              transactionCount: 0,
+              lastTransactionDate: null,
+            });
+          }
+        }
+        
+        setGroupMembers(memberInfos);
+      } else {
+        setGroupMembers([]);
+      }
     } catch (error) {
       console.error('가족 상태 데이터 로드 실패:', error);
+      Alert.alert('오류', '구성원 정보를 불러올 수 없습니다.');
       setGroupMembers([]);
     } finally {
       setLoading(false);

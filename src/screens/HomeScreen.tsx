@@ -15,6 +15,7 @@ import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
+
 import { transactionService, groupService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
 
@@ -206,28 +207,18 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
    * @param shouldCloseModal 모달을 닫을지 여부 (기본값: false)
    */
   const handleSMSExpenseAdd = async (parsedExpense: any, shouldCloseModal: boolean = false) => {
-    console.log('HomeScreen: SMS 지출 추가 시작:', parsedExpense);
-    console.log('HomeScreen: parsedExpense 타입:', typeof parsedExpense);
-    console.log('HomeScreen: parsedExpense 구조:', JSON.stringify(parsedExpense, null, 2));
-    console.log('HomeScreen: shouldCloseModal:', shouldCloseModal);
-    
     try {
       if (!currentGroup) {
-        console.log('HomeScreen: 현재 그룹이 없음');
         Alert.alert('오류', '그룹을 선택해주세요.');
         return;
       }
-      console.log('HomeScreen: 현재 그룹 확인됨:', currentGroup);
 
       const user = getCurrentUser();
       if (!user) {
-        console.log('HomeScreen: 현재 사용자가 없음');
         Alert.alert('오류', '로그인이 필요합니다.');
         return;
       }
-      console.log('HomeScreen: 현재 사용자 확인됨:', user.uid);
 
-      console.log('HomeScreen: 거래 생성 시작');
       // 지출 거래 생성
       const transaction = {
         groupId: currentGroup.id,
@@ -241,34 +232,21 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         updatedAt: new Date(),
       };
 
-      console.log('HomeScreen: 생성할 거래:', JSON.stringify(transaction, null, 2));
-      console.log('HomeScreen: transactionService 타입:', typeof transactionService);
-      console.log('HomeScreen: transactionService.create 타입:', typeof transactionService.create);
-
       // 거래 저장
-      console.log('HomeScreen: transactionService.create 호출 직전');
       const transactionId = await transactionService.create(transaction);
-      console.log('HomeScreen: 거래 저장 완료, ID:', transactionId);
       
       // 홈 데이터 새로고침
-      console.log('HomeScreen: 홈 데이터 새로고침 시작');
       await loadHomeData();
-      console.log('HomeScreen: 홈 데이터 새로고침 완료');
       
       // shouldCloseModal이 true일 때만 모달 닫기
       if (shouldCloseModal) {
-        console.log('HomeScreen: SMS 모달 닫기 시작, 현재 상태:', showSMSModal);
         setShowSMSModal(false);
-        console.log('HomeScreen: SMS 모달 닫기 완료');
-      } else {
-        console.log('HomeScreen: 개별 추가이므로 모달 유지');
       }
       
       return transactionId; // 성공 시 ID 반환
       
     } catch (error) {
-      console.error('HomeScreen: SMS 지출 추가 실패:', error);
-      console.error('HomeScreen: 오류 상세 정보:', error.message, error.stack);
+      console.error('SMS 지출 추가 실패:', error);
       Alert.alert('오류', '지출 추가 중 오류가 발생했습니다.');
       throw error; // 오류를 다시 던져서 상위에서 처리할 수 있도록
     }
@@ -329,6 +307,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <Text style={styles.statChange}>-3.2% 지난달 대비</Text>
           </View>
         </View>
+
+
 
 
 
@@ -414,12 +394,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         {/* SMS 자동 지출 추가 버튼 */}
         <TouchableOpacity 
           style={styles.smsButton} 
-          onPress={() => {
-            console.log('HomeScreen: SMS 버튼 클릭됨');
-            console.log('HomeScreen: showSMSModal 상태:', showSMSModal);
-            console.log('HomeScreen: currentGroup:', currentGroup);
-            setShowSMSModal(true);
-          }}
+          onPress={() => setShowSMSModal(true)}
         >
           <Text style={styles.smsButtonIcon}>📱</Text>
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
@@ -737,6 +712,8 @@ const styles = StyleSheet.create({
   bottomSpacing: {
     height: 20, // 탭 바 공간만큼만 확보
   },
+
+
 });
 
 export default HomeScreen;

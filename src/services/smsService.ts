@@ -30,7 +30,6 @@ export const checkSMSPermission = async (): Promise<boolean> => {
 		const { status } = await Notifications.getPermissionsAsync();
 		return status === "granted";
 	} catch (error) {
-		console.log("권한 확인 실패:", error);
 		return false;
 	}
 };
@@ -41,7 +40,6 @@ export const checkSMSPermission = async (): Promise<boolean> => {
 export const requestSMSPermission = async (): Promise<boolean> => {
 	if (Platform.OS === "web") {
 		// 웹에서는 권한 요청 스킵
-		console.log("웹 환경에서는 SMS 권한이 지원되지 않습니다.");
 		return true;
 	}
 
@@ -49,7 +47,6 @@ export const requestSMSPermission = async (): Promise<boolean> => {
 		const { status } = await Notifications.requestPermissionsAsync();
 		return status === "granted";
 	} catch (error) {
-		console.log("권한 요청 실패:", error);
 		return false;
 	}
 };
@@ -61,11 +58,8 @@ export const parseExpenseFromSMS = (
 	messageBody: string
 ): ParsedExpense | null => {
 	try {
-		console.log("smsService: SMS 파싱 시작:", messageBody);
-
 		// 메시지 정리
 		const cleanBody = messageBody.replace(/\s+/g, " ").trim();
-		console.log("smsService: 정리된 메시지:", cleanBody);
 
 		// 금액 패턴들 (다양한 형식 지원)
 		const amountPatterns = [

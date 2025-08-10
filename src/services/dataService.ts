@@ -24,43 +24,18 @@ export const transactionService = {
 		transaction: Omit<Transaction, "id" | "createdAt" | "updatedAt">
 	): Promise<string> {
 		try {
-			console.log("transactionService: 거래 내역 추가 시작");
-			console.log(
-				"transactionService: 입력 데이터:",
-				JSON.stringify(transaction, null, 2)
-			);
-			console.log("transactionService: db 객체 타입:", typeof db);
-			console.log(
-				"transactionService: collection 함수 타입:",
-				typeof collection
-			);
-
 			const transactionsCollection = collection(db, "transactions");
-			console.log("transactionService: 컬렉션 참조 생성 완료");
-
 			const transactionData = {
 				...transaction,
 				date: Timestamp.fromDate(transaction.date),
 				createdAt: Timestamp.now(),
 				updatedAt: Timestamp.now(),
 			};
-			console.log(
-				"transactionService: Firestore용 데이터 변환 완료:",
-				JSON.stringify(transactionData, null, 2)
-			);
 
-			console.log("transactionService: addDoc 호출 직전");
 			const docRef = await addDoc(transactionsCollection, transactionData);
-			console.log("transactionService: addDoc 호출 완료, 문서 ID:", docRef.id);
-
 			return docRef.id;
 		} catch (error) {
-			console.error("transactionService: 거래 내역 추가 오류:", error);
-			console.error(
-				"transactionService: 오류 상세 정보:",
-				error.message,
-				error.stack
-			);
+			console.error("거래 내역 추가 오류:", error);
 			throw new Error("거래 내역을 저장할 수 없습니다.");
 		}
 	},
@@ -71,7 +46,6 @@ export const transactionService = {
 		limitCount: number = 50
 	): Promise<Transaction[]> {
 		try {
-			// 임시로 orderBy 제거 (인덱스 생성 전까지)
 			const q = query(
 				collection(db, "transactions"),
 				where("groupId", "==", groupId),
@@ -102,8 +76,6 @@ export const transactionService = {
 			const startDate = new Date(year, month - 1, 1);
 			const endDate = new Date(year, month, 0, 23, 59, 59);
 
-			// 임시로 범위 쿼리 제거 (인덱스 생성 전까지)
-			// 모든 거래 내역을 가져온 후 클라이언트에서 필터링
 			const q = query(
 				collection(db, "transactions"),
 				where("groupId", "==", groupId)
@@ -186,12 +158,10 @@ export const groupService = {
 	// 그룹 생성
 	async create(group: Omit<Group, "id" | "createdAt">): Promise<string> {
 		try {
-			console.log("dataService.create 호출됨:", group);
 			const docRef = await addDoc(collection(db, "groups"), {
 				...group,
 				createdAt: Timestamp.now(),
 			});
-			console.log("Firestore 문서 생성 성공:", docRef.id);
 
 			// 그룹 생성 후 기본 카테고리 생성
 			await categoryService.createDefaultCategories(docRef.id);
@@ -226,39 +196,21 @@ export const groupService = {
 	// 사용자가 속한 그룹 목록 조회
 	async getByUser(userId: string): Promise<Group[]> {
 		try {
-			console.log("groupService: getByUser 호출됨, userId:", userId);
-			console.log("groupService: db 객체:", typeof db);
-			console.log("groupService: collection 함수:", typeof collection);
-
-			// 임시로 orderBy 제거 (인덱스 생성 전까지)
 			const q = query(
 				collection(db, "groups"),
 				where("members", "array-contains", userId)
 			);
-			console.log("groupService: 쿼리 생성 완료");
 
-			console.log("groupService: getDocs 호출 직전");
 			const querySnapshot = await getDocs(q);
-			console.log(
-				"groupService: getDocs 호출 완료, 문서 수:",
-				querySnapshot.docs.length
-			);
-
 			const groups = querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 				createdAt: doc.data().createdAt.toDate(),
 			})) as Group[];
 
-			console.log("groupService: 반환할 그룹 목록:", groups);
 			return groups;
 		} catch (error) {
-			console.error("groupService: 사용자 그룹 조회 오류:", error);
-			console.error(
-				"groupService: 오류 상세 정보:",
-				error.message,
-				error.stack
-			);
+			console.error("사용자 그룹 조회 오류:", error);
 			throw new Error("그룹 목록을 불러올 수 없습니다.");
 		}
 	},
@@ -371,38 +323,21 @@ export const categoryService = {
 	// 그룹별 카테고리 목록 조회
 	async getByGroup(groupId: string): Promise<Category[]> {
 		try {
-			console.log("categoryService: getByGroup 호출됨, groupId:", groupId);
-			console.log("categoryService: db 객체:", typeof db);
-			console.log("categoryService: collection 함수:", typeof collection);
-
 			const q = query(
 				collection(db, "categories"),
 				where("groupId", "==", groupId)
 			);
-			console.log("categoryService: 쿼리 생성 완료");
 
-			console.log("categoryService: getDocs 호출 직전");
 			const querySnapshot = await getDocs(q);
-			console.log(
-				"categoryService: getDocs 호출 완료, 문서 수:",
-				querySnapshot.docs.length
-			);
-
 			const categories = querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 				createdAt: doc.data().createdAt.toDate(),
 			})) as Category[];
 
-			console.log("categoryService: 반환할 카테고리 목록:", categories);
 			return categories;
 		} catch (error) {
-			console.error("categoryService: 카테고리 조회 오류:", error);
-			console.error(
-				"categoryService: 오류 상세 정보:",
-				error.message,
-				error.stack
-			);
+			console.error("카테고리 조회 오류:", error);
 			throw new Error("카테고리를 불러올 수 없습니다.");
 		}
 	},

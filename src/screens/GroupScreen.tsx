@@ -388,7 +388,7 @@ const GroupScreen: React.FC = () => {
         groupId={currentGroup.id}
         onCategoryChange={() => {
           // 카테고리 변경 시 필요한 처리
-          console.log('카테고리가 변경되었습니다.');
+    
         }}
       />
     )}

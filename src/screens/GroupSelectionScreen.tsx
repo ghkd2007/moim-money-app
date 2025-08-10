@@ -56,12 +56,9 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
         updatedAt: new Date(),
       };
 
-      console.log('모임 생성 시도:', groupData);
       const groupId = await groupService.create(groupData);
-      console.log('모임 생성 성공, ID:', groupId);
       
       // Alert 대신 바로 다음 화면으로 이동
-      console.log('onGroupSelected 호출:', groupId);
       onGroupSelected(groupId);
       
       // 성공 메시지는 나중에 홈 화면에서 표시
@@ -117,8 +114,7 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
       await groupService.addMember(group.id, user.uid);
       
       // Alert 대신 바로 다음 화면으로 이동
-      console.log('모임 참여 성공, onGroupSelected 호출:', group.id);
-      onGroupSelected(group.id);
+              onGroupSelected(group.id);
       
       // 성공 메시지는 나중에 홈 화면에서 표시
       setTimeout(() => {
