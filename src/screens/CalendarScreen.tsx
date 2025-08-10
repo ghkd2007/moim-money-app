@@ -16,49 +16,83 @@ const CalendarScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 더미 데이터 (나중에 Firebase에서 가져올 예정)
+  // 실제 Firebase 데이터 로드
   useEffect(() => {
-    const dummyTransactions: Transaction[] = [
-      {
-        id: '1',
-        amount: 15000,
-        type: 'expense',
-        categoryId: '식비',
-        memo: '점심식사',
-        date: new Date(2024, 0, 15),
-        groupId: '1',
-        userId: 'user1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: '2',
-        amount: 50000,
-        type: 'income',
-        categoryId: '용돈',
-        memo: '월급',
-        date: new Date(2024, 0, 15),
-        groupId: '1',
-        userId: 'user1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: '3',
-        amount: 8000,
-        type: 'expense',
-        categoryId: '교통비',
-        memo: '지하철',
-        date: new Date(2024, 0, 16),
-        groupId: '1',
-        userId: 'user1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-    setTransactions(dummyTransactions);
-  }, []);
+    loadCalendarData();
+  }, [currentDate]);
+
+  /**
+   * 달력 데이터 로드
+   */
+  const loadCalendarData = async () => {
+    try {
+      setLoading(true);
+      // TODO: Firebase에서 실제 거래 내역 데이터 로드
+      // const user = getCurrentUser();
+      // if (user) {
+      //   const groups = await groupService.getByUser(user.uid);
+      //   if (groups.length > 0) {
+      //     const year = currentDate.getFullYear();
+      //     const month = currentDate.getMonth() + 1;
+      //     const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
+      //     setTransactions(monthTransactions);
+      //   }
+      // }
+      
+      // 임시로 빈 배열 설정 (실제 데이터 연결 전까지)
+      setTransactions([]);
+    } catch (error) {
+      console.error('달력 데이터 로드 실패:', error);
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 더미 데이터 제거 - 실제 데이터만 사용
+  // useEffect(() => {
+  //   const dummyTransactions: Transaction[] = [
+  //     {
+  //       id: '1',
+  //       amount: 15000,
+  //       type: 'expense',
+  //       categoryId: '식비',
+  //       memo: '점심식사',
+  //       date: new Date(2024, 0, 15),
+  //       groupId: '1',
+  //       userId: 'user1',
+  //       createdAt: new Date(),
+  //       updatedAt: new Date(),
+  //     },
+  //     {
+  //       id: '2',
+  //       amount: 50000,
+  //       type: 'income',
+  //       categoryId: '용돈',
+  //       memo: '월급',
+  //       date: new Date(2024, 0, 15),
+  //       groupId: '1',
+  //       userId: 'user1',
+  //       createdAt: new Date(),
+  //       updatedAt: new Date(),
+  //     },
+  //     {
+  //       id: '3',
+  //       amount: 8000,
+  //       type: 'expense',
+  //       categoryId: '교통비',
+  //       memo: '지하철',
+  //       date: new Date(2024, 0, 16),
+  //       groupId: '1',
+  //       userId: 'user1',
+  //       createdAt: new Date(),
+  //       updatedAt: new Date(),
+  //     },
+  //   ];
+  //   setTransactions(dummyTransactions);
+  // }, []);
 
   // 달 이동
   const goToPreviousMonth = () => {

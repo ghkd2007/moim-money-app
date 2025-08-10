@@ -1,0 +1,8 @@
+[33m297bd0e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m chore: 패키지 업데이트 및 기타 설정 파일 정리
+[33mc64eaa1[m feat: 설정 화면 정리 및 Firebase 설정 문서 추가
+[33m8110ff9[m feat: 그룹 관리 및 카테고리 관리 기능 구현
+[33m2aa0ee8[m feat: 홈 화면 개선 및 일일 거래 상세 모달 추가
+[33m6ba4894[m feat: 사용자 인증 및 그룹 선택 플로우 구현
+[33m1294501[m feat: Firebase 서비스 및 데이터 타입 설정
+[33m61eceab[m 화면 구성
+[33ma197579[m Initial commit: 모임 가계부 MVP 앱 기본 구조

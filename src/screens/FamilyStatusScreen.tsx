@@ -22,43 +22,74 @@ interface GroupMember extends User {
 const FamilyStatusScreen: React.FC = () => {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [loading, setLoading] = useState(true);
 
-  // 더미 데이터 (나중에 Firebase에서 가져올 예정)
+  // 실제 Firebase 데이터 로드
   useEffect(() => {
-    const dummyMembers: GroupMember[] = [
-      {
-        id: 'user1',
-        email: 'dad@example.com',
-        name: '김철수',
-        photoURL: null,
-        monthlyExpense: 450000,
-        monthlyIncome: 3000000,
-        transactionCount: 24,
-        lastTransactionDate: new Date(2024, 0, 20),
-      },
-      {
-        id: 'user2',
-        email: 'member2@example.com',
-        name: '이영희',
-        photoURL: null,
-        monthlyExpense: 380000,
-        monthlyIncome: 2500000,
-        transactionCount: 31,
-        lastTransactionDate: new Date(2024, 0, 19),
-      },
-      {
-        id: 'user3',
-        email: 'member3@example.com',
-        name: '박민수',
-        photoURL: null,
-        monthlyExpense: 120000,
-        monthlyIncome: 50000,
-        transactionCount: 15,
-        lastTransactionDate: new Date(2024, 0, 18),
-      },
-    ];
-    setGroupMembers(dummyMembers);
+    loadFamilyStatusData();
   }, []);
+
+  /**
+   * 가족 상태 데이터 로드
+   */
+  const loadFamilyStatusData = async () => {
+    try {
+      setLoading(true);
+      // TODO: Firebase에서 실제 구성원 데이터 로드
+      // const user = getCurrentUser();
+      // if (user) {
+      //   const groups = await groupService.getByUser(user.uid);
+      //   if (groups.length > 0) {
+      //     // 구성원별 통계 데이터 로드 로직
+      //   }
+      // }
+      
+      // 임시로 빈 배열 설정 (실제 데이터 연결 전까지)
+      setGroupMembers([]);
+    } catch (error) {
+      console.error('가족 상태 데이터 로드 실패:', error);
+      setGroupMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 더미 데이터 제거 - 실제 데이터만 사용
+  // useEffect(() => {
+  //   const dummyMembers: GroupMember[] = [
+  //     {
+  //       id: 'user1',
+  //       email: 'dad@example.com',
+  //       name: '김철수',
+  //       photoURL: null,
+  //       monthlyExpense: 450000,
+  //       monthlyIncome: 3000000,
+  //       transactionCount: 24,
+  //       lastTransactionDate: new Date(2024, 0, 20),
+  //     },
+  //     {
+  //       id: 'user2',
+  //       email: 'member2@example.com',
+  //       name: '이영희',
+  //       photoURL: null,
+  //       monthlyExpense: 380000,
+  //       monthlyIncome: 2500000,
+  //       transactionCount: 31,
+  //       lastTransactionDate: new Date(2024, 0, 19),
+  //     },
+  //     {
+  //       id: 'user3',
+  //       email: 'member3@example.com',
+  //       name: '박민수',
+  //       photoURL: null,
+  //       monthlyExpense: 120000,
+  //       monthlyIncome: 50000,
+  //       transactionCount: 15,
+  //       lastTransactionDate: new Date(2024, 0, 18),
+  //     },
+  //   ];
+  //   setGroupMembers(dummyMembers);
+  // }, []);
 
   // 전체 구성원 통계 계산
   const getTotalStats = () => {

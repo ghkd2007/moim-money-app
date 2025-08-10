@@ -91,18 +91,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     } catch (error) {
       console.error('데이터 로드 실패:', error);
       
-      // Firebase 연결 실패 시 더미 데이터로 대체
-      setCurrentGroup({
-        id: 'demo',
-        name: '데모 그룹',
-        members: ['demo-user'],
-        createdAt: new Date(),
-      });
+      // Firebase 연결 실패 시 사용자에게 알림만 표시
+      Alert.alert('연결 오류', 'Firebase 연결에 실패했습니다. 인터넷 연결을 확인해주세요.');
       
-      setMonthlyTotal({ income: 2800000, expense: 820000 });
+      // 더미 데이터 제거 - 실제 데이터만 사용
+      setCurrentGroup(null);
+      setMonthlyTotal({ income: 0, expense: 0 });
       setRecentTransactions([]);
-      
-      Alert.alert('알림', 'Firebase 연결 실패로 데모 모드로 실행됩니다.');
     } finally {
       setLoading(false);
     }
