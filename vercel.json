@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run web",
+  "framework": "expo",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}
