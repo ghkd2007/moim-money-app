@@ -1,62 +1,68 @@
 // 앱 상수 정의
 
-// 색상 상수
+// 색상 상수 - 머니투게더 디자인 시스템
 export const COLORS = {
-  // 기본 색상
-  primary: '#007AFF',
-  secondary: '#5856D6',
-  success: '#34C759',
-  warning: '#FF9500',
-  danger: '#FF3B30',
-  
-  // 수입/지출 색상
-  income: '#34C759', // 파란색 → 초록색으로 변경 (더 직관적)
-  expense: '#FF3B30', // 빨간색
-  
-  // 배경 색상
-  background: '#F2F2F7',
-  surface: '#FFFFFF',
-  
-  // 텍스트 색상
-  text: '#000000',
-  textSecondary: '#6D6D80',
-  textLight: '#8E8E93',
-  
-  // 테두리 색상
-  border: '#C6C6C8',
-  separator: '#E5E5EA',
+	// 기본 색상 (코랄/피치 톤)
+	primary: "#FF9B7A", // 메인 코랄 색상
+	primaryLight: "#FFA588", // 연한 코랄
+	primaryDark: "#E8845F", // 진한 코랄
+
+	// 보조 색상 (민트/터키석 톤)
+	secondary: "#5DBEA3", // 메인 민트
+	secondaryLight: "#4ECDC4", // 연한 민트
+	secondaryDark: "#4A9B85", // 진한 민트
+
+	// 상태 색상
+	success: "#5DBEA3", // 민트 톤으로 통일
+	warning: "#FFB366", // 따뜻한 오렌지
+	danger: "#E85A5A", // 부드러운 레드
+
+	// 수입/지출 색상
+	income: "#5DBEA3", // 민트 (수입)
+	expense: "#FF9B7A", // 코랄 (지출)
+
+	// 배경 색상 (크림/베이지 톤)
+	background: "#FFF4F0", // 따뜻한 크림
+	surface: "#FFFFFF", // 순백
+	surfaceSecondary: "#FFEEE8", // 연한 피치
+
+	// 텍스트 색상 (다크 브라운 톤)
+	text: "#6B4423", // 메인 다크 브라운
+	textSecondary: "#8B5A2B", // 보조 브라운
+	textLight: "#A67C52", // 연한 브라운
+
+	// 테두리 색상
+	border: "#E8C4A0", // 베이지 톤 테두리
+	separator: "#F2D7C2", // 연한 베이지 구분선
 } as const;
 
-// 기본 카테고리 목록
+// 기본 카테고리 목록 - 새로운 색상 팔레트 적용
 export const DEFAULT_CATEGORIES = [
-  { name: '식비', color: '#FF9500', icon: '🍽️' },
-  { name: '교통비', color: '#007AFF', icon: '🚗' },
-  { name: '문화생활', color: '#5856D6', icon: '🎬' },
-  { name: '쇼핑', color: '#FF3B30', icon: '🛍️' },
-  { name: '의료비', color: '#34C759', icon: '🏥' },
-  { name: '교육비', color: '#FF2D92', icon: '📚' },
-  { name: '기타', color: '#8E8E93', icon: '💰' },
+	{ name: "식비", color: "#FF9B7A", icon: "🍽️" },
+	{ name: "교통비", color: "#5DBEA3", icon: "🚗" },
+	{ name: "문화생활", color: "#FFB366", icon: "🎬" },
+	{ name: "쇼핑", color: "#FFA588", icon: "🛍️" },
+	{ name: "의료비", color: "#4ECDC4", icon: "🏥" },
+	{ name: "교육비", color: "#E8845F", icon: "📚" },
+	{ name: "기타", color: "#A67C52", icon: "💰" },
 ] as const;
 
 // 화면 크기 관련 상수
 export const SCREEN = {
-  padding: 16,
-  borderRadius: 12,
-  headerHeight: 60,
+	padding: 16,
+	borderRadius: 12,
+	headerHeight: 60,
 } as const;
 
 // 애니메이션 상수
 export const ANIMATION = {
-  duration: 300,
-  easing: 'ease-in-out',
+	duration: 300,
+	easing: "ease-in-out",
 } as const;
 
 // 앱 정보
 export const APP_INFO = {
-  name: '모임 가계부',
-  version: '1.0.0',
-  description: '모임 단위로 수입/지출을 관리하는 공동 가계부',
+	name: "머니투게더",
+	version: "1.0.0",
+	description: "모임과 함께하는 스마트 가계부",
 } as const;
-
-
-
