@@ -16,15 +16,22 @@ const firebaseConfig = {
 	measurementId: "G-DP4JT94814", // Analytics용 (선택사항)
 };
 
+console.log("Firebase: 설정 시작");
+console.log("Firebase: 설정 객체:", firebaseConfig);
+
 // Firebase 앱 초기화
 const app = initializeApp(firebaseConfig);
+console.log("Firebase: 앱 초기화 완료");
 
 // Firebase Auth 초기화 (크로스 플랫폼 호환)
 export const auth = getAuth(app);
+console.log("Firebase: Auth 초기화 완료");
 
 // Firebase 서비스 인스턴스 생성
 export const db = getFirestore(app);
+console.log("Firebase: Firestore 초기화 완료, db 객체:", typeof db);
 // export const storage = getStorage(app); // Storage는 나중에 필요할 때 추가
 export const functions = getFunctions(app);
+console.log("Firebase: Functions 초기화 완료");
 
 export default app;

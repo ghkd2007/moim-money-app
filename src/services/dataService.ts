@@ -15,7 +15,7 @@ import {
 	Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Transaction, Group, User } from "../types";
+import { Transaction, Group, User, Category } from "../types";
 
 // 거래 내역 관련 서비스
 export const transactionService = {
@@ -24,15 +24,43 @@ export const transactionService = {
 		transaction: Omit<Transaction, "id" | "createdAt" | "updatedAt">
 	): Promise<string> {
 		try {
-			const docRef = await addDoc(collection(db, "transactions"), {
+			console.log("transactionService: 거래 내역 추가 시작");
+			console.log(
+				"transactionService: 입력 데이터:",
+				JSON.stringify(transaction, null, 2)
+			);
+			console.log("transactionService: db 객체 타입:", typeof db);
+			console.log(
+				"transactionService: collection 함수 타입:",
+				typeof collection
+			);
+
+			const transactionsCollection = collection(db, "transactions");
+			console.log("transactionService: 컬렉션 참조 생성 완료");
+
+			const transactionData = {
 				...transaction,
 				date: Timestamp.fromDate(transaction.date),
 				createdAt: Timestamp.now(),
 				updatedAt: Timestamp.now(),
-			});
+			};
+			console.log(
+				"transactionService: Firestore용 데이터 변환 완료:",
+				JSON.stringify(transactionData, null, 2)
+			);
+
+			console.log("transactionService: addDoc 호출 직전");
+			const docRef = await addDoc(transactionsCollection, transactionData);
+			console.log("transactionService: addDoc 호출 완료, 문서 ID:", docRef.id);
+
 			return docRef.id;
 		} catch (error) {
-			console.error("거래 내역 추가 오류:", error);
+			console.error("transactionService: 거래 내역 추가 오류:", error);
+			console.error(
+				"transactionService: 오류 상세 정보:",
+				error.message,
+				error.stack
+			);
 			throw new Error("거래 내역을 저장할 수 없습니다.");
 		}
 	},
@@ -164,6 +192,10 @@ export const groupService = {
 				createdAt: Timestamp.now(),
 			});
 			console.log("Firestore 문서 생성 성공:", docRef.id);
+
+			// 그룹 생성 후 기본 카테고리 생성
+			await categoryService.createDefaultCategories(docRef.id);
+
 			return docRef.id;
 		} catch (error) {
 			console.error("그룹 생성 오류:", error);
@@ -194,20 +226,39 @@ export const groupService = {
 	// 사용자가 속한 그룹 목록 조회
 	async getByUser(userId: string): Promise<Group[]> {
 		try {
+			console.log("groupService: getByUser 호출됨, userId:", userId);
+			console.log("groupService: db 객체:", typeof db);
+			console.log("groupService: collection 함수:", typeof collection);
+
 			// 임시로 orderBy 제거 (인덱스 생성 전까지)
 			const q = query(
 				collection(db, "groups"),
 				where("members", "array-contains", userId)
 			);
+			console.log("groupService: 쿼리 생성 완료");
 
+			console.log("groupService: getDocs 호출 직전");
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map((doc) => ({
+			console.log(
+				"groupService: getDocs 호출 완료, 문서 수:",
+				querySnapshot.docs.length
+			);
+
+			const groups = querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 				createdAt: doc.data().createdAt.toDate(),
 			})) as Group[];
+
+			console.log("groupService: 반환할 그룹 목록:", groups);
+			return groups;
 		} catch (error) {
-			console.error("사용자 그룹 조회 오류:", error);
+			console.error("groupService: 사용자 그룹 조회 오류:", error);
+			console.error(
+				"groupService: 오류 상세 정보:",
+				error.message,
+				error.stack
+			);
 			throw new Error("그룹 목록을 불러올 수 없습니다.");
 		}
 	},
@@ -311,6 +362,109 @@ export const userService = {
 		} catch (error) {
 			console.error("사용자 목록 조회 오류:", error);
 			throw new Error("사용자 목록을 불러올 수 없습니다.");
+		}
+	},
+};
+
+// 카테고리 관련 서비스
+export const categoryService = {
+	// 그룹별 카테고리 목록 조회
+	async getByGroup(groupId: string): Promise<Category[]> {
+		try {
+			console.log("categoryService: getByGroup 호출됨, groupId:", groupId);
+			console.log("categoryService: db 객체:", typeof db);
+			console.log("categoryService: collection 함수:", typeof collection);
+
+			const q = query(
+				collection(db, "categories"),
+				where("groupId", "==", groupId)
+			);
+			console.log("categoryService: 쿼리 생성 완료");
+
+			console.log("categoryService: getDocs 호출 직전");
+			const querySnapshot = await getDocs(q);
+			console.log(
+				"categoryService: getDocs 호출 완료, 문서 수:",
+				querySnapshot.docs.length
+			);
+
+			const categories = querySnapshot.docs.map((doc) => ({
+				id: doc.id,
+				...doc.data(),
+				createdAt: doc.data().createdAt.toDate(),
+			})) as Category[];
+
+			console.log("categoryService: 반환할 카테고리 목록:", categories);
+			return categories;
+		} catch (error) {
+			console.error("categoryService: 카테고리 조회 오류:", error);
+			console.error(
+				"categoryService: 오류 상세 정보:",
+				error.message,
+				error.stack
+			);
+			throw new Error("카테고리를 불러올 수 없습니다.");
+		}
+	},
+
+	// 카테고리 생성
+	async create(category: Omit<Category, "id" | "createdAt">): Promise<string> {
+		try {
+			const docRef = await addDoc(collection(db, "categories"), {
+				...category,
+				createdAt: Timestamp.now(),
+			});
+			return docRef.id;
+		} catch (error) {
+			console.error("카테고리 생성 오류:", error);
+			throw new Error("카테고리를 생성할 수 없습니다.");
+		}
+	},
+
+	// 카테고리 수정
+	async update(id: string, updates: Partial<Category>): Promise<void> {
+		try {
+			const docRef = doc(db, "categories", id);
+			await updateDoc(docRef, {
+				...updates,
+				updatedAt: Timestamp.now(),
+			});
+		} catch (error) {
+			console.error("카테고리 수정 오류:", error);
+			throw new Error("카테고리를 수정할 수 없습니다.");
+		}
+	},
+
+	// 카테고리 삭제
+	async delete(id: string): Promise<void> {
+		try {
+			const docRef = doc(db, "categories", id);
+			await deleteDoc(docRef);
+		} catch (error) {
+			console.error("카테고리 삭제 오류:", error);
+			throw new Error("카테고리를 삭제할 수 없습니다.");
+		}
+	},
+
+	// 테스트용 기본 카테고리 생성 (그룹 생성 시 호출)
+	async createDefaultCategories(groupId: string): Promise<void> {
+		try {
+			const defaultCategories = [
+				{ name: "커피", icon: "☕", color: "#8B4513", isDefault: true },
+				{ name: "점심", icon: "🍱", color: "#FF6B35", isDefault: true },
+				{ name: "저녁", icon: "🍽️", color: "#FF8C42", isDefault: true },
+				{ name: "간식", icon: "🍪", color: "#FFB347", isDefault: true },
+				{ name: "교통", icon: "🚇", color: "#4ECDC4", isDefault: true },
+			];
+
+			for (const category of defaultCategories) {
+				await this.create({
+					...category,
+					groupId,
+				});
+			}
+		} catch (error) {
+			console.error("기본 카테고리 생성 오류:", error);
 		}
 	},
 };

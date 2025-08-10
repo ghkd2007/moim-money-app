@@ -111,15 +111,22 @@ export const onAuthChange = (callback: (user: AuthUser | null) => void) => {
 
 // 현재 사용자 정보 가져오기
 export const getCurrentUser = (): AuthUser | null => {
+	console.log("authService: getCurrentUser 호출됨");
 	const user = auth.currentUser;
+	console.log("authService: auth.currentUser:", user);
+
 	if (user) {
-		return {
+		const authUser = {
 			uid: user.uid,
 			email: user.email,
 			displayName: user.displayName,
 			photoURL: user.photoURL,
 		};
+		console.log("authService: 반환할 사용자 정보:", authUser);
+		return authUser;
 	}
+
+	console.log("authService: 현재 로그인된 사용자 없음");
 	return null;
 };
 
