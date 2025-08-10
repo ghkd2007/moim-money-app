@@ -141,7 +141,12 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
   const renderSelection = () => (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>모임 가계부</Text>
+        <View style={styles.logoContainer}>
+          <View style={styles.logoIcon}>
+            <Text style={styles.logoIconText}>W</Text>
+          </View>
+        </View>
+        <Text style={styles.title}>머니투게더</Text>
         <Text style={styles.subtitle}>모임을 생성하거나 참여해보세요</Text>
       </View>
 
@@ -274,6 +279,29 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  logoIconText: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -1,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
@@ -302,11 +330,11 @@ const styles = StyleSheet.create({
   },
   createButton: {
     borderWidth: 2,
-    borderColor: '#10B981',
+    borderColor: COLORS.primary,
   },
   joinButton: {
     borderWidth: 2,
-    borderColor: '#3B82F6',
+    borderColor: COLORS.secondary,
   },
   actionIcon: {
     fontSize: 32,

@@ -159,9 +159,15 @@ const MembersScreen: React.FC = () => {
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.title}>구성원</Text>
-        <Text style={styles.subtitle}>
-          {currentGroup?.name || '모임'} • {members.length}명
-        </Text>
+        <View style={styles.subtitleContainer}>
+          <Text style={styles.groupName}>
+            {currentGroup?.name || '모임'}
+          </Text>
+          <View style={styles.memberCountBadge}>
+            <Text style={styles.memberCountIcon}>👥</Text>
+            <Text style={styles.memberCountText}>{members.length}명</Text>
+          </View>
+        </View>
       </View>
 
       {/* 초대 버튼 */}
@@ -223,9 +229,40 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 4,
   },
-  subtitle: {
+  subtitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  groupName: {
     fontSize: 16,
     color: COLORS.textSecondary,
+    marginRight: 12,
+  },
+  memberCountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#FF9800', // 진한 오렌지 테두리
+    elevation: 2,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  memberCountIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  memberCountText: {
+    fontSize: 14,
+    color: '#E65100', // 진한 오렌지로 대비 강화
+    fontWeight: '700',
   },
   inviteButton: {
     flexDirection: 'row',
@@ -359,3 +396,4 @@ const styles = StyleSheet.create({
 });
 
 export default MembersScreen;
+

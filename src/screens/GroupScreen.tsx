@@ -24,20 +24,20 @@ interface MemberStats extends User {
   lastTransactionDate?: Date;
 }
 
-type Period = 'week' | 'month' | 'year';
+
 
 const GroupScreen: React.FC = () => {
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [memberStats, setMemberStats] = useState<MemberStats[]>([]);
-  const [selectedPeriod, setSelectedPeriod] = useState<Period>('month');
+
   const [loading, setLoading] = useState(true);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   useEffect(() => {
     loadGroupData();
-  }, [selectedPeriod]);
+  }, []);
 
   /**
    * 모임 데이터 로드
@@ -119,17 +119,8 @@ const GroupScreen: React.FC = () => {
       const now = new Date();
       let startDate: Date;
       
-      switch (selectedPeriod) {
-        case 'week':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        case 'year':
-          startDate = new Date(now.getFullYear(), 0, 1);
-          break;
-      }
+      // 이번 달 기준으로 고정
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
 
       // 해당 기간의 모든 거래 내역 가져오기 (임시로 모든 거래를 가져온 후 필터링)
       const allTransactions = await transactionService.getByGroup(groupId, 1000);
@@ -172,12 +163,7 @@ const GroupScreen: React.FC = () => {
     setLoading(false);
   };
 
-  /**
-   * 기간 변경
-   */
-  const handlePeriodChange = (period: Period) => {
-    setSelectedPeriod(period);
-  };
+
 
   /**
    * 참여 코드 공유하기
@@ -204,32 +190,7 @@ const GroupScreen: React.FC = () => {
     }
   };
 
-  /**
-   * 기간 선택 버튼 렌더링
-   */
-  const renderPeriodSelector = () => (
-    <View style={styles.periodSelector}>
-      {(['week', 'month', 'year'] as Period[]).map((period) => (
-        <TouchableOpacity
-          key={period}
-          style={[
-            styles.periodButton,
-            selectedPeriod === period && styles.periodButtonActive,
-          ]}
-          onPress={() => handlePeriodChange(period)}
-        >
-          <Text
-            style={[
-              styles.periodButtonText,
-              selectedPeriod === period && styles.periodButtonTextActive,
-            ]}
-          >
-            {period === 'week' ? '주간' : period === 'month' ? '월간' : '연간'}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+
 
   /**
    * 구성원 통계 카드 렌더링
@@ -326,8 +287,7 @@ const GroupScreen: React.FC = () => {
 
 
 
-        {/* 기간 선택 (헤더 안으로 이동) */}
-        {renderPeriodSelector()}
+
       </View>
 
       {/* 구성원 통계 */}
@@ -482,12 +442,17 @@ const styles = StyleSheet.create({
   memberCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F9FF',
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderWidth: 2,
+    borderColor: '#FF9800', // 진한 오렌지 테두리
+    elevation: 2,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   memberCountIcon: {
     fontSize: 16,
@@ -495,8 +460,8 @@ const styles = StyleSheet.create({
   },
   memberCountText: {
     fontSize: 16,
-    color: '#0EA5E9',
-    fontWeight: '600',
+    color: '#E65100', // 진한 오렌지로 대비 강화
+    fontWeight: '700', // 더 굵게
   },
 
 
@@ -508,38 +473,11 @@ const styles = StyleSheet.create({
 
 
 
-  periodSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 6,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  periodButton: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  periodButtonActive: {
-    backgroundColor: COLORS.primary,
-    elevation: 2,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  periodButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  periodButtonTextActive: {
-    color: 'white',
-    fontWeight: '700',
-  },
+
+
+
+
+
   membersSection: {
     paddingHorizontal: 20,
     marginBottom: 20,

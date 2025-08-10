@@ -293,7 +293,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   today: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    borderWidth: 2,
+    borderColor: '#FF9800', // 진한 오렌지 테두리
+    elevation: 3,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   dayNumber: {
     fontSize: 16,
@@ -307,7 +314,8 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
   },
   todayText: {
-    color: '#92400E',
+    color: '#E65100', // 진한 오렌지로 대비 강화
+    fontWeight: '800', // 더 굵게
   },
   transactionIndicator: {
     marginTop: 2,

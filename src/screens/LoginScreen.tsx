@@ -83,9 +83,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* 로고 섹션 */}
         <View style={styles.logoSection}>
-          <Text style={styles.logo}>💰</Text>
-          <Text style={styles.appName}>모임 머니</Text>
-          <Text style={styles.subtitle}>함께하는 가계부</Text>
+          <View style={styles.logoContainer}>
+            <View style={styles.logoIcon}>
+              <Text style={styles.logoIconText}>W</Text>
+            </View>
+          </View>
+          <Text style={styles.appName}>머니투게더</Text>
+          <Text style={styles.subtitle}>모임과 함께하는 스마트 가계부</Text>
         </View>
 
         {/* 폼 섹션 */}
@@ -202,19 +206,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logo: {
-    fontSize: 60,
-    marginBottom: 16,
+  logoContainer: {
+    marginBottom: 24,
+  },
+  logoIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  logoIconText: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -1,
   },
   appName: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     color: COLORS.text,
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
     color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   formSection: {
     backgroundColor: COLORS.surface,
@@ -228,7 +252,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 12,
     padding: 4,
     marginBottom: 24,

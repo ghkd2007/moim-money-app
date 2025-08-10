@@ -93,6 +93,14 @@ const FamilyStatusScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.title}>구성원 현황</Text>
         
+        {/* 명수 표시 */}
+        <View style={styles.memberCountContainer}>
+          <View style={styles.memberCountBadge}>
+            <Text style={styles.memberCountIcon}>👥</Text>
+            <Text style={styles.memberCountText}>{groupMembers.length}명</Text>
+          </View>
+        </View>
+        
         {/* 기간 선택 */}
         <View style={styles.periodSelector}>
           {(['week', 'month', 'year'] as const).map((period) => (
@@ -264,7 +272,36 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: COLORS.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  memberCountContainer: {
+    alignItems: 'center',
     marginBottom: 16,
+  },
+  memberCountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FF9800', // 진한 오렌지 테두리
+    elevation: 2,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  memberCountIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  memberCountText: {
+    fontSize: 16,
+    color: '#E65100', // 진한 오렌지로 대비 강화
+    fontWeight: '700',
   },
   periodSelector: {
     flexDirection: 'row',

@@ -14,6 +14,7 @@ import { formatCurrency, formatDate, formatDateShort } from '../utils';
 import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
+import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
 import { transactionService, groupService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
 
@@ -31,6 +32,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [loading, setLoading] = useState(true);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
+  const [showSMSModal, setShowSMSModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -204,17 +206,80 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   };
 
   /**
-   * 임시 로그아웃 핸들러 (개발용)
+   * SMS에서 파싱된 지출 추가
+   * @param parsedExpense 파싱된 지출 정보
+   * @param shouldCloseModal 모달을 닫을지 여부 (기본값: false)
    */
-  const handleLogout = async () => {
+  const handleSMSExpenseAdd = async (parsedExpense: any, shouldCloseModal: boolean = false) => {
+    console.log('HomeScreen: SMS 지출 추가 시작:', parsedExpense);
+    console.log('HomeScreen: parsedExpense 타입:', typeof parsedExpense);
+    console.log('HomeScreen: parsedExpense 구조:', JSON.stringify(parsedExpense, null, 2));
+    console.log('HomeScreen: shouldCloseModal:', shouldCloseModal);
+    
     try {
-      await logout();
-      Alert.alert('로그아웃', '성공적으로 로그아웃되었습니다.');
+      if (!currentGroup) {
+        console.log('HomeScreen: 현재 그룹이 없음');
+        Alert.alert('오류', '그룹을 선택해주세요.');
+        return;
+      }
+      console.log('HomeScreen: 현재 그룹 확인됨:', currentGroup);
+
+      const user = getCurrentUser();
+      if (!user) {
+        console.log('HomeScreen: 현재 사용자가 없음');
+        Alert.alert('오류', '로그인이 필요합니다.');
+        return;
+      }
+      console.log('HomeScreen: 현재 사용자 확인됨:', user.uid);
+
+      console.log('HomeScreen: 거래 생성 시작');
+      // 지출 거래 생성
+      const transaction = {
+        groupId: currentGroup.id,
+        userId: user.uid,
+        type: 'expense' as const,
+        amount: parsedExpense.amount,
+        categoryId: 'sms_auto', // SMS 자동 인식 카테고리
+        memo: parsedExpense.description,
+        date: parsedExpense.date,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      console.log('HomeScreen: 생성할 거래:', JSON.stringify(transaction, null, 2));
+      console.log('HomeScreen: transactionService 타입:', typeof transactionService);
+      console.log('HomeScreen: transactionService.create 타입:', typeof transactionService.create);
+
+      // 거래 저장
+      console.log('HomeScreen: transactionService.create 호출 직전');
+      const transactionId = await transactionService.create(transaction);
+      console.log('HomeScreen: 거래 저장 완료, ID:', transactionId);
+      
+      // 홈 데이터 새로고침
+      console.log('HomeScreen: 홈 데이터 새로고침 시작');
+      await loadHomeData();
+      console.log('HomeScreen: 홈 데이터 새로고침 완료');
+      
+      // shouldCloseModal이 true일 때만 모달 닫기
+      if (shouldCloseModal) {
+        console.log('HomeScreen: SMS 모달 닫기 시작, 현재 상태:', showSMSModal);
+        setShowSMSModal(false);
+        console.log('HomeScreen: SMS 모달 닫기 완료');
+      } else {
+        console.log('HomeScreen: 개별 추가이므로 모달 유지');
+      }
+      
+      return transactionId; // 성공 시 ID 반환
+      
     } catch (error) {
-      console.error('로그아웃 실패:', error);
-      Alert.alert('오류', '로그아웃 중 오류가 발생했습니다.');
+      console.error('HomeScreen: SMS 지출 추가 실패:', error);
+      console.error('HomeScreen: 오류 상세 정보:', error.message, error.stack);
+      Alert.alert('오류', '지출 추가 중 오류가 발생했습니다.');
+      throw error; // 오류를 다시 던져서 상위에서 처리할 수 있도록
     }
   };
+
+
 
   if (loading) {
     return (
@@ -235,9 +300,6 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           <Text style={styles.switchIcon}>⌄</Text>
         </TouchableOpacity>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>로그아웃</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.notificationButton}>
             <Text style={styles.notificationIcon}>🔔</Text>
             <View style={styles.notificationBadge}>
@@ -348,10 +410,24 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </View>
         </View>
 
-        {/* 빠른 기록 버튼 */}
+        {/* 기록하기 버튼 */}
         <TouchableOpacity style={styles.quickAddButton} onPress={handleQuickAdd}>
-          <Text style={styles.quickAddIcon}>➕</Text>
-          <Text style={styles.quickAddText}>빠른 기록</Text>
+          <Text style={styles.quickAddIcon}>✏️</Text>
+          <Text style={styles.quickAddText}>기록하기</Text>
+        </TouchableOpacity>
+
+        {/* SMS 자동 지출 추가 버튼 */}
+        <TouchableOpacity 
+          style={styles.smsButton} 
+          onPress={() => {
+            console.log('HomeScreen: SMS 버튼 클릭됨');
+            console.log('HomeScreen: showSMSModal 상태:', showSMSModal);
+            console.log('HomeScreen: currentGroup:', currentGroup);
+            setShowSMSModal(true);
+          }}
+        >
+          <Text style={styles.smsButtonIcon}>📱</Text>
+          <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
         {/* 하단 여백 */}
@@ -371,6 +447,13 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={() => setShowDailyModal(false)}
         selectedDate={selectedDate}
         transactions={recentTransactions}
+      />
+
+      {/* SMS 자동 지출 추가 모달 */}
+      <SMSAutoExpenseModal
+        visible={showSMSModal}
+        onClose={() => setShowSMSModal(false)}
+        onExpenseAdd={handleSMSExpenseAdd}
       />
     </View>
   );
@@ -451,18 +534,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logoutButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#EF4444',
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  logoutText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+
 
   // 스크롤 컨텐츠
   scrollContent: {
@@ -519,9 +591,9 @@ const styles = StyleSheet.create({
   // 미니 달력 카드
   calendarCard: {
     marginHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 20,
-    padding: 20,
+    marginTop: 20, // 상단 여백 줄임
+    marginBottom: 16, // 하단 여백 줄임
+    padding: 16, // 내부 패딩 줄임
     backgroundColor: COLORS.surface,
     borderRadius: 16,
     elevation: 2,
@@ -579,9 +651,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   todayMiniCell: {
-    backgroundColor: '#E8F4FD', // 연한 파스텔 블루
-    borderWidth: 2,
-    borderColor: '#3B82F6', // 테두리로 오늘 날짜 강조
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    borderWidth: 3,
+    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    elevation: 4,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   miniDayNumber: {
     fontSize: 12,
@@ -593,8 +670,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   todayMiniNumber: {
-    color: '#1E40AF', // 진한 파란색으로 대비 강화
-    fontWeight: '700', // 더 굵게
+    color: '#E65100', // 진한 오렌지로 대비 강화
+    fontWeight: '800', // 더 굵게
   },
   miniTransactionDot: {
     position: 'absolute',
@@ -607,18 +684,18 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF', // 흰색 테두리로 대비 강화
   },
 
-  // 빠른 기록 버튼
+  // 기록하기 버튼
   quickAddButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 20,
-    marginBottom: 20,
-    paddingVertical: 18,
-    backgroundColor: COLORS.primary,
+    marginBottom: 12, // 하단 여백 줄임
+    paddingVertical: 16, // 버튼 높이 줄임
+    backgroundColor: COLORS.secondary, // 민트 톤으로 변경하여 더 부드럽게
     borderRadius: 16,
     elevation: 3,
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.secondary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -633,9 +710,37 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
   },
 
+  // SMS 자동 지출 추가 버튼
+  smsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    paddingVertical: 14,
+    backgroundColor: '#FEF3C7', // 연한 노란색 배경
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#F59E0B', // 진한 노란색 테두리
+    elevation: 2,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  smsButtonIcon: {
+    fontSize: 20,
+    marginRight: 10,
+  },
+  smsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#92400E', // 진한 노란색 텍스트
+  },
+
   // 하단 여백
   bottomSpacing: {
-    height: 100, // 탭 바 공간 확보
+    height: 20, // 탭 바 공간만큼만 확보
   },
 });
 
