@@ -50,3 +50,5 @@ npm start
 2. Authentication 및 Firestore 활성화  
 3. 앱 실행 및 연결 테스트
 4. 기본 로그인/회원가입 화면 구현
+
+
