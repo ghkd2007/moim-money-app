@@ -8,10 +8,10 @@ import {
   ScrollView,
   TextInput,
   Alert,
-  Pressable,
 } from 'react-native';
-import { COLORS } from '../constants';
+import { COLORS, CATEGORY_ICONS } from '../constants';
 import { Category } from '../types';
+import { categoryService } from '../services/dataService';
 
 interface CategoryManagementModalProps {
   visible: boolean;
@@ -19,13 +19,6 @@ interface CategoryManagementModalProps {
   groupId: string;
   onCategoryChange: () => void;
 }
-
-// 사용 가능한 아이콘들
-const CATEGORY_ICONS = [
-  '🍽️', '🛒', '🚗', '🏠', '💊', '👕', '🎬', '📚', '☕', '🎮',
-  '✈️', '🏥', '💄', '🔧', '📱', '💡', '🎵', '🏃', '🍺', '🎁',
-  '💰', '💳', '🏦', '📊', '💼', '🎯', '⭐', '🔥', '💎', '🌟',
-];
 
 const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   visible,
@@ -48,43 +41,14 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   /**
    * 카테고리 목록 로드
    */
-  const loadCategories = () => {
-    // 임시 더미 데이터 (나중에 Firebase에서 로드)
-    const dummyCategories: Category[] = [
-      {
-        id: '1',
-        groupId: groupId,
-        name: '식비',
-        icon: '🍽️',
-        isDefault: true,
-        createdAt: new Date(),
-      },
-      {
-        id: '2',
-        groupId: groupId,
-        name: '교통비',
-        icon: '🚗',
-        isDefault: true,
-        createdAt: new Date(),
-      },
-      {
-        id: '3',
-        groupId: groupId,
-        name: '생활용품',
-        icon: '🛒',
-        isDefault: true,
-        createdAt: new Date(),
-      },
-      {
-        id: '4',
-        groupId: groupId,
-        name: '월급',
-        icon: '💰',
-        isDefault: true,
-        createdAt: new Date(),
-      },
-    ];
-    setCategories(dummyCategories);
+  const loadCategories = async () => {
+    try {
+      const loadedCategories = await categoryService.getByGroup(groupId);
+      setCategories(loadedCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      Alert.alert('오류', '카테고리를 불러올 수 없습니다.');
+    }
   };
 
   /**
@@ -106,7 +70,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   /**
    * 카테고리 저장
    */
-  const handleSaveCategory = () => {
+  const handleSaveCategory = async () => {
     if (!newCategoryName.trim()) {
       Alert.alert('오류', '카테고리 이름을 입력해주세요.');
       return;
@@ -114,24 +78,39 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
 
     if (editingCategory) {
       // 수정
-      setCategories(prev => prev.map(cat => 
-        cat.id === editingCategory.id 
-          ? { ...cat, name: newCategoryName.trim(), icon: selectedIcon }
-          : cat
-      ));
-      Alert.alert('완료', '카테고리가 수정되었습니다.');
+      try {
+        await categoryService.update(editingCategory.id, {
+          name: newCategoryName.trim(),
+          icon: selectedIcon,
+        });
+        setCategories(prev => prev.map(cat => 
+          cat.id === editingCategory.id 
+            ? { ...cat, name: newCategoryName.trim(), icon: selectedIcon }
+            : cat
+        ));
+        Alert.alert('완료', '카테고리가 수정되었습니다.');
+      } catch (error) {
+        console.error('Error updating category:', error);
+        Alert.alert('오류', '카테고리를 수정할 수 없습니다.');
+      }
     } else {
       // 추가
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        groupId: groupId,
-        name: newCategoryName.trim(),
-        icon: selectedIcon,
-        isDefault: false,
-        createdAt: new Date(),
-      };
-      setCategories(prev => [...prev, newCategory]);
-      Alert.alert('완료', '카테고리가 추가되었습니다.');
+      try {
+        const newCategory: Category = {
+          id: Date.now().toString(), // 임시 ID, 실제 사용 시 서버에서 생성
+          groupId: groupId,
+          name: newCategoryName.trim(),
+          icon: selectedIcon,
+          isDefault: false,
+          createdAt: new Date(),
+        };
+        await categoryService.create(newCategory);
+        setCategories(prev => [...prev, newCategory]);
+        Alert.alert('완료', '카테고리가 추가되었습니다.');
+      } catch (error) {
+        console.error('Error adding category:', error);
+        Alert.alert('오류', '카테고리를 추가할 수 없습니다.');
+      }
     }
 
     setShowAddModal(false);
@@ -141,7 +120,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   /**
    * 카테고리 삭제
    */
-  const handleDeleteCategory = (category: Category) => {
+  const handleDeleteCategory = async (category: Category) => {
     if (category.isDefault) {
       Alert.alert('알림', '기본 카테고리는 삭제할 수 없습니다.');
       return;
@@ -155,10 +134,16 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
         {
           text: '삭제',
           style: 'destructive',
-          onPress: () => {
-            setCategories(prev => prev.filter(cat => cat.id !== category.id));
-            onCategoryChange();
-            Alert.alert('완료', '카테고리가 삭제되었습니다.');
+          onPress: async () => {
+            try {
+              await categoryService.delete(category.id);
+              setCategories(prev => prev.filter(cat => cat.id !== category.id));
+              onCategoryChange();
+              Alert.alert('완료', '카테고리가 삭제되었습니다.');
+            } catch (error) {
+              console.error('Error deleting category:', error);
+              Alert.alert('오류', '카테고리를 삭제할 수 없습니다.');
+            }
           }
         }
       ]
