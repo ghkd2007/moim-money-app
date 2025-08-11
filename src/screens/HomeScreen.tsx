@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Alert,
   Dimensions,
 } from 'react-native';
@@ -16,7 +17,7 @@ import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
 
-import { transactionService, groupService } from '../services/dataService';
+import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
 
 const { width } = Dimensions.get('window');
@@ -29,17 +30,25 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   // 상태 관리
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [monthlyTotal, setMonthlyTotal] = useState({ income: 0, expense: 0 });
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [monthlyTransactions, setMonthlyTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  
+  // 예산 관련 상태
+  const [budgetYear, setBudgetYear] = useState(new Date().getFullYear());
+  const [budgetMonth, setBudgetMonth] = useState(new Date().getMonth() + 1);
+  const [budgetSummary, setBudgetSummary] = useState<any>(null);
+  const [editingBudget, setEditingBudget] = useState(false);
+  const [newBudgetAmount, setNewBudgetAmount] = useState('');
+
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadHomeData();
-  }, []);
+  }, [budgetYear, budgetMonth]);
 
   /**
    * 홈 화면 데이터 로드
@@ -60,9 +69,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         const group = groups[0];
         setCurrentGroup(group);
 
-        // 해당 그룹의 거래 내역 조회
-        const transactions = await transactionService.getByGroup(group.id, 50);
-        setRecentTransactions(transactions);
+
 
         // 이번 달 통계 계산
         const now = new Date();
@@ -75,6 +82,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           currentMonth
         );
 
+        // monthlyTransactions 상태 설정
+        setMonthlyTransactions(monthlyTransactions);
+
         const income = monthlyTransactions
           .filter(t => t.type === 'income')
           .reduce((sum, t) => sum + t.amount, 0);
@@ -84,10 +94,14 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           .reduce((sum, t) => sum + t.amount, 0);
 
         setMonthlyTotal({ income, expense });
+
+        // 예산 데이터 로드
+        const budgetSummary = await budgetService.getBudgetSummary(group.id, budgetYear, budgetMonth);
+        setBudgetSummary(budgetSummary);
       } else {
         // 그룹이 없는 경우는 이제 GroupSelectionScreen에서 처리
         setMonthlyTotal({ income: 0, expense: 0 });
-        setRecentTransactions([]);
+        setBudgetSummary(null);
       }
     } catch (error) {
       console.error('데이터 로드 실패:', error);
@@ -152,8 +166,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         updatedAt: new Date(),
       };
 
-      // UI 즉시 업데이트
-      setRecentTransactions([newTransaction, ...recentTransactions]);
+
 
       // 월별 합계 업데이트
       if (transaction.type === 'income') {
@@ -189,16 +202,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
    * 날짜 클릭 핸들러 (거래 내역이 있는 날짜)
    */
   const handleDateClick = (date: Date) => {
-    // 해당 날짜에 거래 내역이 있는지 확인
-    const hasTransaction = recentTransactions.some(transaction => {
-      const transactionDate = new Date(transaction.date);
-      return transactionDate.toDateString() === date.toDateString();
-    });
-
-    if (hasTransaction) {
-      setSelectedDate(date);
-      setShowDailyModal(true);
-    }
+    // 현재는 모든 날짜 클릭 시 모달 열기 (거래 내역 확인은 모달 내에서)
+    setSelectedDate(date);
+    setShowDailyModal(true);
   };
 
   /**
@@ -254,6 +260,70 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
 
 
+  // 예산 월 변경 핸들러
+  const handleBudgetMonthChange = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      if (budgetMonth === 1) {
+        setBudgetMonth(12);
+        setBudgetYear(budgetYear - 1);
+      } else {
+        setBudgetMonth(budgetMonth - 1);
+      }
+    } else {
+      if (budgetMonth === 12) {
+        setBudgetMonth(1);
+        setBudgetYear(budgetYear + 1);
+      } else {
+        setBudgetMonth(budgetMonth + 1);
+      }
+    }
+  };
+
+  // 예산 저장 핸들러
+  const handleBudgetSave = async () => {
+    try {
+      const user = getCurrentUser();
+      if (!user) return;
+
+      if (!currentGroup) {
+        Alert.alert('오류', '그룹이 선택되지 않았습니다.');
+        return;
+      }
+
+      await budgetService.createOrUpdateBudget(
+        currentGroup.id,
+        budgetYear,
+        budgetMonth,
+        parseInt(newBudgetAmount)
+      );
+
+      setEditingBudget(false);
+      setNewBudgetAmount('');
+      await loadHomeData();
+      Alert.alert('성공', '예산이 설정되었습니다.');
+    } catch (error) {
+      console.error('예산 설정 실패:', error);
+      Alert.alert('오류', '예산 설정에 실패했습니다.');
+    }
+  };
+
+  // 예산 월 이름 가져오기
+  const getBudgetMonthName = (month: number) => {
+    const monthNames = [
+      '1월', '2월', '3월', '4월', '5월', '6월',
+      '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
+    return monthNames[month - 1];
+  };
+
+  // 예산 진행률 색상 가져오기
+  const getBudgetProgressColor = (spent: number, budget: number) => {
+    const ratio = spent / budget;
+    if (ratio >= 1) return '#DC2626'; // 빨간색 (초과)
+    if (ratio >= 0.8) return '#F59E0B'; // 주황색 (경고)
+    return '#10B981'; // 초록색 (정상)
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -283,6 +353,106 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       </View>
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* 월별 예산 카드 */}
+        <View style={styles.budgetCard}>
+          <View style={styles.budgetHeader}>
+            <Text style={styles.budgetTitle}>이번 달 예산</Text>
+            <View style={styles.monthNavigator}>
+              <TouchableOpacity 
+                style={styles.monthButton} 
+                onPress={() => handleBudgetMonthChange('prev')}
+              >
+                <Text style={styles.monthButtonText}>‹</Text>
+              </TouchableOpacity>
+              <Text style={styles.currentMonthText}>
+                {budgetYear}년 {getBudgetMonthName(budgetMonth)}
+              </Text>
+              <TouchableOpacity 
+                style={styles.monthButton} 
+                onPress={() => handleBudgetMonthChange('next')}
+              >
+                <Text style={styles.monthButtonText}>›</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={styles.budgetContent}>
+            {editingBudget ? (
+              <View style={styles.budgetEditContainer}>
+                <TextInput
+                  style={styles.budgetInput}
+                  value={newBudgetAmount}
+                  onChangeText={setNewBudgetAmount}
+                  placeholder="예산 금액 입력"
+                  keyboardType="numeric"
+                  autoFocus
+                />
+                <View style={styles.budgetEditButtons}>
+                  <TouchableOpacity
+                    style={[styles.budgetButton, styles.cancelBudgetButton]}
+                    onPress={() => {
+                      setEditingBudget(false);
+                      setNewBudgetAmount('');
+                    }}
+                  >
+                    <Text style={styles.cancelBudgetButtonText}>취소</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.budgetButton, styles.saveBudgetButton]}
+                    onPress={handleBudgetSave}
+                  >
+                    <Text style={styles.saveBudgetButtonText}>저장</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.budgetDisplay}>
+                <View style={styles.budgetAmountSection}>
+                  <Text style={styles.budgetAmountLabel}>설정된 예산</Text>
+                  <Text style={styles.budgetAmount}>
+                    {budgetSummary?.budget?.totalBudget ? formatCurrency(budgetSummary.budget.totalBudget) : '설정되지 않음'}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.editBudgetButton}
+                    onPress={() => setEditingBudget(true)}
+                  >
+                    <Text style={styles.editBudgetButtonText}>편집</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {budgetSummary?.budget?.totalBudget && budgetSummary.budget.totalBudget > 0 && (
+                  <View style={styles.budgetProgressSection}>
+                    <View style={styles.budgetProgressRow}>
+                      <Text style={styles.budgetProgressLabel}>총 지출</Text>
+                      <Text style={styles.budgetProgressValue}>{formatCurrency(budgetSummary.totalSpent)}</Text>
+                    </View>
+                    <View style={styles.budgetProgressRow}>
+                      <Text style={styles.budgetProgressLabel}>남은 예산</Text>
+                      <Text style={[
+                        styles.budgetProgressValue,
+                        { color: getBudgetProgressColor(budgetSummary.totalSpent, budgetSummary.budget.totalBudget) }
+                      ]}>
+                        {formatCurrency(budgetSummary.totalRemaining)}
+                      </Text>
+                    </View>
+                    <View style={styles.budgetProgressBar}>
+                      <View
+                        style={[
+                          styles.budgetProgressFill,
+                          {
+                            width: `${Math.min((budgetSummary.totalSpent / budgetSummary.budget.totalBudget) * 100, 100)}%`,
+                            backgroundColor: getBudgetProgressColor(budgetSummary.totalSpent, budgetSummary.budget.totalBudget)
+                          }
+                        ]}
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+
         {/* 이번 달 수입/지출 카드 */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
@@ -348,19 +518,25 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               return days.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
-                // 실제 거래 내역 데이터로 확인
-                const hasTransaction = isCurrentMonth && recentTransactions.some(transaction => {
+                
+                // 해당 날짜의 거래 내역 확인
+                const dayTransactions = monthlyTransactions.filter(transaction => {
                   const transactionDate = new Date(transaction.date);
-                  return transactionDate.toDateString() === date.toDateString();
+                  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                  const nextDate = new Date(targetDate);
+                  nextDate.setDate(nextDate.getDate() + 1);
+                  
+                  return transactionDate >= targetDate && transactionDate < nextDate;
                 });
+                
+                const hasTransaction = dayTransactions.length > 0;
                 
                 return (
                   <TouchableOpacity 
                     key={index} 
                     style={styles.miniDayCell}
                     onPress={() => handleDateClick(date)}
-                    disabled={!hasTransaction}
-                    activeOpacity={hasTransaction ? 0.7 : 1}
+                    activeOpacity={0.7}
                   >
                     <View style={[
                       styles.miniDay,
@@ -374,8 +550,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                       ]}>
                         {date.getDate()}
                       </Text>
-                      {hasTransaction && (
-                        <View style={styles.miniTransactionDot} />
+                      
+                      {/* 거래 내역 표시 - 작은 점으로만 표시 */}
+                      {hasTransaction && isCurrentMonth && (
+                        <View style={styles.transactionDot} />
                       )}
                     </View>
                   </TouchableOpacity>
@@ -400,6 +578,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
+
+
         {/* 하단 여백 */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -416,7 +596,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         visible={showDailyModal}
         onClose={() => setShowDailyModal(false)}
         selectedDate={selectedDate}
-        transactions={recentTransactions}
+        transactions={monthlyTransactions}
       />
 
       {/* SMS 자동 지출 추가 모달 */}
@@ -425,6 +605,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={() => setShowSMSModal(false)}
         onExpenseAdd={handleSMSExpenseAdd}
       />
+
+
     </View>
   );
 };
@@ -609,13 +791,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   miniDay: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+  },
+  
+  // 거래 내역 표시 점
+  transactionDot: {
+    position: 'absolute',
+    bottom: 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FF9800', // 오렌지 색상
   },
   otherMonthDay: {
     backgroundColor: 'transparent',
@@ -714,6 +906,195 @@ const styles = StyleSheet.create({
   },
 
 
+
+  // 예산 카드 스타일
+  budgetCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginTop: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  budgetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  budgetTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  monthNavigator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  monthButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  monthButtonText: {
+    fontSize: 18,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  currentMonthText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    minWidth: 80,
+    textAlign: 'center',
+  },
+  budgetContent: {
+    padding: 20,
+  },
+  budgetEditContainer: {
+    gap: 16,
+  },
+  budgetInput: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 18,
+    backgroundColor: 'white',
+  },
+  budgetEditButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  budgetButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBudgetButton: {
+    backgroundColor: '#94A3B8',
+  },
+  cancelBudgetButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  saveBudgetButton: {
+    backgroundColor: COLORS.primary,
+  },
+  saveBudgetButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  budgetDisplay: {
+    gap: 20,
+  },
+  budgetAmountSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  budgetAmountLabel: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  budgetAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+    flex: 1,
+    textAlign: 'center',
+  },
+  editBudgetButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+  },
+  editBudgetButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  budgetProgressSection: {
+    gap: 12,
+  },
+  budgetProgressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  budgetProgressLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  budgetProgressValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  budgetProgressBar: {
+    height: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  budgetProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+
+  // 거래 내역이 있는 날짜 스타일
+  hasTransactionDay: {
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    borderWidth: 3,
+    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    elevation: 4,
+    shadowColor: '#FF9800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+
+  // 거래 내역 표시 영역
+  transactionIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: '50%',
+    transform: [{ translateX: -14 }], // 중앙 정렬을 위해 절반 크기로 조정
+    backgroundColor: '#FF9800', // 오렌지 색상
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  transactionAmount: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'white',
+  },
+  incomeAmount: {
+    color: '#10B981', // 초록색
+  },
+  expenseAmount: {
+    color: '#DC2626', // 빨간색
+  },
 });
 
 export default HomeScreen;

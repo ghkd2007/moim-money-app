@@ -14,15 +14,29 @@ import { formatCurrency, formatDate } from '../utils';
 import { Transaction } from '../types';
 import { getCurrentUser } from '../services/authService';
 import { groupService, transactionService } from '../services/dataService';
+import TransactionDetailModal from '../components/TransactionDetailModal';
 
 const CalendarScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // 거래 내역 수정/삭제 관련 상태
+  const [showTransactionDetailModal, setShowTransactionDetailModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
+  // 컴포넌트 마운트/언마운트 로깅
+  useEffect(() => {
+    console.log('CalendarScreen: 컴포넌트 마운트됨');
+    return () => {
+      console.log('CalendarScreen: 컴포넌트 언마운트됨');
+    };
+  }, []);
 
   // 실제 Firebase 데이터 로드
   useEffect(() => {
+    console.log('CalendarScreen: useEffect 실행됨, currentDate:', currentDate);
     loadCalendarData();
   }, [currentDate]);
 
@@ -31,28 +45,41 @@ const CalendarScreen: React.FC = () => {
    */
   const loadCalendarData = async () => {
     try {
+      console.log('CalendarScreen: loadCalendarData 시작');
       setLoading(true);
       
       const user = getCurrentUser();
       if (!user) {
+        console.log('CalendarScreen: 사용자 정보 없음');
         return;
       }
+      
+      console.log('CalendarScreen: 사용자 정보:', user);
 
       const groups = await groupService.getByUser(user.uid);
+      console.log('CalendarScreen: 조회된 그룹:', groups);
+      
       if (groups.length > 0) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
+        console.log(`CalendarScreen: ${year}년 ${month}월 데이터 조회 시작`);
+        
         const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
+        console.log('CalendarScreen: 조회된 거래 내역:', monthTransactions);
+        
         setTransactions(monthTransactions);
+        console.log('CalendarScreen: transactions 상태 업데이트 완료, 개수:', monthTransactions.length);
       } else {
+        console.log('CalendarScreen: 사용자가 속한 그룹 없음');
         setTransactions([]);
       }
     } catch (error) {
-      console.error('달력 데이터 로드 실패:', error);
+      console.error('CalendarScreen: 달력 데이터 로드 실패:', error);
       Alert.alert('오류', '거래 내역을 불러올 수 없습니다.');
       setTransactions([]);
     } finally {
       setLoading(false);
+      console.log('CalendarScreen: loadCalendarData 완료');
     }
   };
 
@@ -132,9 +159,28 @@ const CalendarScreen: React.FC = () => {
 
   // 특정 날짜의 거래 내역 가져오기
   const getTransactionsForDate = (date: Date) => {
-    return transactions.filter(transaction => 
-      transaction.date.toDateString() === date.toDateString()
-    );
+    console.log(`CalendarScreen: getTransactionsForDate 호출 - ${date.toDateString()}`);
+    console.log(`CalendarScreen: 현재 transactions 배열 길이: ${transactions.length}`);
+    console.log(`CalendarScreen: transactions 배열 내용:`, transactions);
+    
+    // 날짜 비교 로직 개선 - 시간대 차이 문제 해결
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    
+    console.log(`CalendarScreen: 대상 날짜 범위: ${targetDate.toISOString()} ~ ${nextDate.toISOString()}`);
+    
+    const filteredTransactions = transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      const isInRange = transactionDate >= targetDate && transactionDate < nextDate;
+      
+      console.log(`CalendarScreen: 거래 날짜: ${transactionDate.toISOString()}, 범위 내: ${isInRange}`);
+      
+      return isInRange;
+    });
+    
+    console.log(`CalendarScreen: ${date.toDateString()} 거래 내역:`, filteredTransactions);
+    return filteredTransactions;
   };
 
   // 특정 날짜의 총 금액 계산
@@ -147,7 +193,10 @@ const CalendarScreen: React.FC = () => {
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
     
-    return { income, expense, net: income - expense };
+    const net = income - expense;
+    console.log(`CalendarScreen: ${date.toDateString()} 총액 - 수입: ${income}, 지출: ${expense}, 순액: ${net}`);
+    
+    return { income, expense, net };
   };
 
   // 날짜 클릭 핸들러
@@ -155,10 +204,42 @@ const CalendarScreen: React.FC = () => {
     setSelectedDate(date);
   };
 
+  // 거래 내역 클릭 핸들러
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setShowTransactionDetailModal(true);
+  };
+
+  // 거래 내역 수정 핸들러
+  const handleTransactionUpdate = async (updatedTransaction: Transaction) => {
+    try {
+      // 캘린더 데이터 새로고침
+      await loadCalendarData();
+    } catch (error) {
+      console.error('거래 내역 수정 후 새로고침 실패:', error);
+    }
+  };
+
+  // 거래 내역 삭제 핸들러
+  const handleTransactionDelete = async (transactionId: string) => {
+    try {
+      // 캘린더 데이터 새로고침
+      await loadCalendarData();
+    } catch (error) {
+      console.error('거래 내역 삭제 후 새로고침 실패:', error);
+    }
+  };
+
   // 선택된 날짜의 거래 내역
   const selectedDateTransactions = selectedDate ? getTransactionsForDate(selectedDate) : [];
 
   const calendarDays = generateCalendarDays();
+  
+  // 달력 렌더링 전 상태 확인
+  console.log('CalendarScreen: 달력 렌더링 시작');
+  console.log('CalendarScreen: 현재 transactions 상태:', transactions);
+  console.log('CalendarScreen: 현재 월:', currentDate.getMonth() + 1);
+  console.log('CalendarScreen: 현재 연도:', currentDate.getFullYear());
 
   return (
     <View style={styles.container}>
@@ -190,6 +271,11 @@ const CalendarScreen: React.FC = () => {
           const isToday = date.toDateString() === new Date().toDateString();
           const dayTotal = getDayTotal(date);
           const hasTransactions = getTransactionsForDate(date).length > 0;
+
+          // 로깅 추가
+          if (isCurrentMonth && hasTransactions) {
+            console.log(`CalendarScreen: ${date.toDateString()} - 거래 있음, 수입: ${dayTotal.income}, 지출: ${dayTotal.expense}`);
+          }
 
           return (
             <TouchableOpacity
@@ -239,18 +325,31 @@ const CalendarScreen: React.FC = () => {
               data={selectedDateTransactions}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={styles.transactionItem}>
+                <TouchableOpacity 
+                  style={styles.transactionItem}
+                  onPress={() => handleTransactionClick(item)}
+                >
                   <View style={styles.transactionInfo}>
                     <Text style={styles.transactionCategory}>{item.categoryId}</Text>
                     <Text style={styles.transactionMemo}>{item.memo}</Text>
                   </View>
-                  <Text style={[
-                    styles.transactionAmount,
-                    item.type === 'income' ? styles.incomeAmount : styles.expenseAmount,
-                  ]}>
-                    {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
-                  </Text>
-                </View>
+                  <View style={styles.transactionRight}>
+                    <Text style={[
+                      styles.transactionAmount,
+                      item.type === 'income' ? styles.incomeAmount : styles.expenseAmount,
+                    ]}>
+                      {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                    </Text>
+                    <View style={styles.transactionActions}>
+                      <TouchableOpacity 
+                        style={styles.editButton}
+                        onPress={() => handleTransactionClick(item)}
+                      >
+                        <Text style={styles.editButtonText}>✏️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               )}
               style={styles.transactionList}
             />
@@ -259,6 +358,15 @@ const CalendarScreen: React.FC = () => {
           )}
         </View>
       )}
+
+      {/* 거래 내역 상세/수정 모달 */}
+      <TransactionDetailModal
+        visible={showTransactionDetailModal}
+        transaction={selectedTransaction}
+        onClose={() => setShowTransactionDetailModal(false)}
+        onUpdate={handleTransactionUpdate}
+        onDelete={handleTransactionDelete}
+      />
     </View>
   );
 };
@@ -421,6 +529,24 @@ const styles = StyleSheet.create({
   },
   expenseAmount: {
     color: '#DC2626',
+  },
+  transactionRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  transactionActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: COLORS.primary,
+  },
+  editButtonText: {
+    fontSize: 16,
+    color: 'white',
   },
   noTransactions: {
     textAlign: 'center',

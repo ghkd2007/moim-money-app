@@ -56,6 +56,7 @@ const TabNavigator: React.FC = () => {
           ),
         }}
       />
+
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}

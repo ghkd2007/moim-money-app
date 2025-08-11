@@ -13,9 +13,18 @@ import {
 	limit,
 	onSnapshot,
 	Timestamp,
+	setDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { Transaction, Group, User, Category } from "../types";
+import {
+	Transaction,
+	Group,
+	User,
+	Category,
+	Budget,
+	CategoryBudget,
+	BudgetSummary,
+} from "../types";
 
 // 거래 내역 관련 서비스
 export const transactionService = {
@@ -73,8 +82,16 @@ export const transactionService = {
 		month: number
 	): Promise<Transaction[]> {
 		try {
+			console.log(
+				`getByMonth 호출: groupId=${groupId}, year=${year}, month=${month}`
+			);
+
 			const startDate = new Date(year, month - 1, 1);
 			const endDate = new Date(year, month, 0, 23, 59, 59);
+
+			console.log(
+				`날짜 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`
+			);
 
 			const q = query(
 				collection(db, "transactions"),
@@ -82,21 +99,54 @@ export const transactionService = {
 			);
 
 			const querySnapshot = await getDocs(q);
-			const allTransactions = querySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-				date: doc.data().date.toDate(),
-				createdAt: doc.data().createdAt.toDate(),
-				updatedAt: doc.data().updatedAt.toDate(),
-			})) as Transaction[];
+			console.log(`전체 거래 내역 수: ${querySnapshot.docs.length}`);
+
+			const allTransactions = querySnapshot.docs.map((doc) => {
+				const data = doc.data();
+				const transaction = {
+					id: doc.id,
+					...data,
+					date:
+						data.date instanceof Timestamp
+							? data.date.toDate()
+							: new Date(data.date),
+					createdAt:
+						data.createdAt instanceof Timestamp
+							? data.createdAt.toDate()
+							: new Date(data.createdAt),
+					updatedAt:
+						data.updatedAt instanceof Timestamp
+							? data.updatedAt.toDate()
+							: new Date(data.updatedAt),
+				};
+				console.log(
+					`거래 내역: ${
+						transaction.id
+					}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${
+						transaction.categoryId
+					}`
+				);
+				return transaction;
+			}) as Transaction[];
 
 			// 클라이언트에서 날짜 필터링
-			return allTransactions
-				.filter(
-					(transaction) =>
-						transaction.date >= startDate && transaction.date <= endDate
-				)
-				.sort((a, b) => b.date.getTime() - a.date.getTime()); // 최신순 정렬
+			const filteredTransactions = allTransactions.filter((transaction) => {
+				const isInRange =
+					transaction.date >= startDate && transaction.date <= endDate;
+				console.log(
+					`날짜 필터링: ${transaction.date.toISOString()} - ${
+						isInRange ? "포함" : "제외"
+					}`
+				);
+				return isInRange;
+			});
+
+			console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
+
+			// 최신순 정렬
+			return filteredTransactions.sort(
+				(a, b) => b.date.getTime() - a.date.getTime()
+			);
 		} catch (error) {
 			console.error("월별 거래 내역 조회 오류:", error);
 			throw new Error("월별 거래 내역을 불러올 수 없습니다.");
@@ -400,6 +450,192 @@ export const categoryService = {
 			}
 		} catch (error) {
 			console.error("기본 카테고리 생성 오류:", error);
+		}
+	},
+};
+
+// 예산 관리 서비스
+export const budgetService = {
+	// 월별 예산 생성/수정
+	async createOrUpdateBudget(
+		groupId: string,
+		year: number,
+		month: number,
+		totalBudget: number
+	): Promise<Budget> {
+		try {
+			const budgetRef = doc(db, "budgets", `${groupId}_${year}_${month}`);
+			const budgetDoc = await getDoc(budgetRef);
+
+			const budgetData: Budget = {
+				id: budgetRef.id,
+				groupId,
+				year,
+				month,
+				totalBudget,
+				totalSpent: budgetDoc.exists() ? budgetDoc.data().totalSpent : 0,
+				remainingBudget:
+					totalBudget - (budgetDoc.exists() ? budgetDoc.data().totalSpent : 0),
+				createdAt: budgetDoc.exists() ? budgetDoc.data().createdAt : new Date(),
+				updatedAt: new Date(),
+			};
+
+			await setDoc(budgetRef, budgetData);
+			return budgetData;
+		} catch (error) {
+			console.error("예산 생성/수정 실패:", error);
+			throw new Error("예산 설정에 실패했습니다.");
+		}
+	},
+
+	// 월별 예산 조회
+	async getBudget(
+		groupId: string,
+		year: number,
+		month: number
+	): Promise<Budget | null> {
+		try {
+			const budgetRef = doc(db, "budgets", `${groupId}_${year}_${month}`);
+			const budgetDoc = await getDoc(budgetRef);
+
+			if (budgetDoc.exists()) {
+				return budgetDoc.data() as Budget;
+			}
+			return null;
+		} catch (error) {
+			console.error("예산 조회 실패:", error);
+			throw new Error("예산 조회에 실패했습니다.");
+		}
+	},
+
+	// 예산 요약 정보 조회
+	async getBudgetSummary(
+		groupId: string,
+		year: number,
+		month: number
+	): Promise<BudgetSummary | null> {
+		try {
+			const budget = await this.getBudget(groupId, year, month);
+
+			// 실제 지출 금액 계산 (거래 내역에서)
+			const transactions = await this.getByGroupAndMonth(groupId, year, month);
+			const totalSpent = transactions.reduce((sum, transaction) => {
+				if (transaction.type === "expense") {
+					return sum + transaction.amount;
+				}
+				return sum;
+			}, 0);
+
+			// 예산이 없으면 기본 요약만 반환
+			if (!budget) {
+				return {
+					budget: {
+						id: "default",
+						groupId,
+						year,
+						month,
+						totalBudget: 0,
+						totalSpent,
+						remainingBudget: 0,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+					categoryBudgets: [],
+					totalSpent,
+					totalRemaining: 0,
+					overspentCategories: [],
+				};
+			}
+
+			return {
+				budget: {
+					...budget,
+					totalSpent,
+					remainingBudget: budget.totalBudget - totalSpent,
+				},
+				categoryBudgets: [],
+				totalSpent,
+				totalRemaining: budget.totalBudget - totalSpent,
+				overspentCategories: [],
+			};
+		} catch (error) {
+			console.error("예산 요약 조회 실패:", error);
+			throw new Error("예산 요약 조회에 실패했습니다.");
+		}
+	},
+
+	// 월별 거래 내역 조회 (예산 계산용)
+	async getByGroupAndMonth(
+		groupId: string,
+		year: number,
+		month: number
+	): Promise<Transaction[]> {
+		try {
+			console.log(
+				`getByGroupAndMonth 호출: groupId=${groupId}, year=${year}, month=${month}`
+			);
+
+			// 임시로 단순 쿼리 사용 (인덱스 생성 전까지)
+			const transactionsRef = collection(db, "transactions");
+			const q = query(transactionsRef, where("groupId", "==", groupId));
+
+			const querySnapshot = await getDocs(q);
+			console.log(`전체 거래 내역 수: ${querySnapshot.docs.length}`);
+
+			const allTransactions = querySnapshot.docs.map((doc) => {
+				const data = doc.data();
+				const transaction = {
+					id: doc.id,
+					...data,
+					date:
+						data.date instanceof Timestamp
+							? data.date.toDate()
+							: new Date(data.date),
+					createdAt:
+						data.createdAt instanceof Timestamp
+							? data.createdAt.toDate()
+							: new Date(data.createdAt),
+					updatedAt:
+						data.updatedAt instanceof Timestamp
+							? data.updatedAt.toDate()
+							: new Date(data.updatedAt),
+				};
+				console.log(
+					`거래 내역: ${
+						transaction.id
+					}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${
+						transaction.categoryId
+					}`
+				);
+				return transaction;
+			}) as Transaction[];
+
+			// 클라이언트에서 날짜 필터링
+			const startDate = new Date(year, month - 1, 1);
+			const endDate = new Date(year, month, 0, 23, 59, 59);
+
+			console.log(
+				`날짜 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`
+			);
+
+			const filteredTransactions = allTransactions.filter((transaction) => {
+				const transactionDate = new Date(transaction.date);
+				const isInRange =
+					transactionDate >= startDate && transactionDate <= endDate;
+				console.log(
+					`날짜 필터링: ${transactionDate.toISOString()} - ${
+						isInRange ? "포함" : "제외"
+					}`
+				);
+				return isInRange;
+			});
+
+			console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
+
+			return filteredTransactions;
+		} catch (error) {
+			console.error("월별 거래 내역 조회 실패:", error);
+			throw new Error("월별 거래 내역 조회에 실패했습니다.");
 		}
 	},
 };

@@ -30,7 +30,11 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
   // 선택된 날짜의 거래 내역만 필터링
   const dailyTransactions = transactions.filter(transaction => {
     const transactionDate = new Date(transaction.date);
-    return transactionDate.toDateString() === selectedDate.toDateString();
+    const targetDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    
+    return transactionDate >= targetDate && transactionDate < nextDate;
   });
 
   // 수입/지출 합계 계산

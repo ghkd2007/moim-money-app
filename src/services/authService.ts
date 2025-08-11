@@ -86,24 +86,48 @@ export const login = async (
 // 로그아웃
 export const logout = async (): Promise<void> => {
 	try {
+		console.log("authService: 로그아웃 시작");
+		console.log("authService: 현재 사용자:", auth.currentUser);
+
 		await signOut(auth);
+
+		console.log("authService: Firebase signOut 완료");
+		console.log("authService: 로그아웃 후 사용자:", auth.currentUser);
+
+		// 로그아웃 성공 확인
+		if (auth.currentUser) {
+			throw new Error("로그아웃 후에도 사용자가 남아있습니다.");
+		}
+
+		console.log("authService: 로그아웃 성공");
 	} catch (error: any) {
-		console.error("로그아웃 오류:", error);
+		console.error("authService: 로그아웃 오류:", error);
 		throw new Error("로그아웃 중 오류가 발생했습니다.");
 	}
 };
 
 // 인증 상태 변경 리스너
 export const onAuthChange = (callback: (user: AuthUser | null) => void) => {
+	console.log("authService: onAuthChange 리스너 등록됨");
+
 	return onAuthStateChanged(auth, (user: User | null) => {
+		console.log(
+			"authService: Firebase 인증 상태 변경 감지:",
+			user ? "사용자 있음" : "사용자 없음"
+		);
+		console.log("authService: 사용자 상세 정보:", user);
+
 		if (user) {
-			callback({
+			const authUser = {
 				uid: user.uid,
 				email: user.email,
 				displayName: user.displayName,
 				photoURL: user.photoURL,
-			});
+			};
+			console.log("authService: 콜백 호출 (로그인):", authUser);
+			callback(authUser);
 		} else {
+			console.log("authService: 콜백 호출 (로그아웃): null");
 			callback(null);
 		}
 	});

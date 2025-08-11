@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { COLORS, DEFAULT_CATEGORIES } from '../constants';
 import { formatCurrency } from '../utils';
@@ -307,10 +308,14 @@ const styles = StyleSheet.create({
   typeButtonActive: {
     backgroundColor: COLORS.surface,
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    }),
   },
   typeText: {
     fontSize: 16,
@@ -328,10 +333,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    }),
   },
   currencySymbol: {
     fontSize: 20,
