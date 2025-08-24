@@ -9,6 +9,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
 import { GroupMember } from '../types';
@@ -159,7 +160,7 @@ const FamilyStatusScreen: React.FC = () => {
   const totalStats = getTotalStats();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.title}>구성원 현황</Text>
@@ -323,7 +324,7 @@ const FamilyStatusScreen: React.FC = () => {
         {/* 하단 여백 */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

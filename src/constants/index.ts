@@ -36,6 +36,30 @@ export const COLORS = {
 	separator: "#F2D7C2", // 연한 베이지 구분선
 } as const;
 
+// 카테고리 아이콘 목록
+export const CATEGORY_ICONS = [
+	"🍽️",
+	"🚗",
+	"🎬",
+	"🛍️",
+	"🏥",
+	"📚",
+	"💰",
+	"🏠",
+	"🎮",
+	"✈️",
+	"🍺",
+	"💄",
+	"🎵",
+	"📱",
+	"💻",
+	"🎨",
+	"🏃",
+	"🧘",
+	"🐕",
+	"🌱",
+] as const;
+
 // 기본 카테고리 목록 - 새로운 색상 팔레트 적용
 export const DEFAULT_CATEGORIES = [
 	{ name: "식비", color: "#FF9B7A", icon: "🍽️" },

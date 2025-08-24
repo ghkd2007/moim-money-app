@@ -9,6 +9,7 @@ import {
   Share,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency } from '../utils';
 import { getCurrentUser } from '../services/authService';
@@ -264,7 +265,7 @@ const GroupScreen: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
     <ScrollView style={styles.scrollView}>
       {/* 헤더 */}
       <View style={styles.header}>
@@ -392,7 +393,7 @@ const GroupScreen: React.FC = () => {
         }}
       />
     )}
-    </View>
+    </SafeAreaView>
   );
 };
 

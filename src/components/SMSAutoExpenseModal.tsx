@@ -45,12 +45,54 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
   const [editingIndex, setEditingIndex] = useState<number>(-1);
   const [groupCategories, setGroupCategories] = useState<Category[]>([]);
   const [currentGroupId, setCurrentGroupId] = useState<string | null>(null);
+  
+  // 중복 방지를 위한 상태 추가
+  const [addedExpenseIds, setAddedExpenseIds] = useState<Set<string>>(new Set());
+  const [filteredExpenses, setFilteredExpenses] = useState<ParsedExpense[]>([]);
+
+  /**
+   * 모달 닫기
+   */
+  const handleClose = () => {
+    // 추가된 지출 목록 초기화
+    setAddedExpenseIds(new Set());
+    onClose();
+  };
 
   useEffect(() => {
     if (visible) {
       checkPermissionAndLoadMessages();
+    } else {
+      // 모달이 닫힐 때 추가된 지출 목록 초기화
+      setAddedExpenseIds(new Set());
     }
   }, [visible]);
+
+  // 중복 제거된 지출 목록 업데이트
+  useEffect(() => {
+    const filtered = parsedExpenses.filter(expense => {
+      const expenseId = generateExpenseId(expense);
+      return !addedExpenseIds.has(expenseId);
+    });
+    setFilteredExpenses(filtered);
+  }, [parsedExpenses, addedExpenseIds]);
+
+  /**
+   * 지출 고유 ID 생성 (중복 판단용)
+   */
+  const generateExpenseId = (expense: ParsedExpense): string => {
+    // 금액 + 가맹점 + 날짜로 고유 ID 생성
+    const dateStr = expense.date.toISOString().split('T')[0]; // YYYY-MM-DD
+    return `${expense.amount}_${expense.description}_${dateStr}`;
+  };
+
+  /**
+   * 이미 추가된 지출인지 확인
+   */
+  const isExpenseAlreadyAdded = (expense: ParsedExpense): boolean => {
+    const expenseId = generateExpenseId(expense);
+    return addedExpenseIds.has(expenseId);
+  };
 
   /**
    * 그룹별 카테고리 로드
@@ -164,16 +206,25 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
    * 지출 추가 확인
    */
   const handleExpenseAdd = (expense: ParsedExpense, index: number) => {
+    // 이미 추가된 지출인지 확인
+    if (isExpenseAlreadyAdded(expense)) {
+      Alert.alert('알림', '이미 추가된 지출입니다.');
+      return;
+    }
+
     showExpenseConfirmation(
       expense,
       async () => {
         try {
           // 개별 추가이므로 shouldCloseModal을 false로 전달
-          const result = await onExpenseAdd(expense, false);
+          await onExpenseAdd(expense, false);
           
-          // 해당 항목을 parsedExpenses에서 제거
-          const updatedExpenses = parsedExpenses.filter((_, i) => i !== index);
-          setParsedExpenses(updatedExpenses);
+          // 추가된 지출 ID를 추적 목록에 추가
+          const expenseId = generateExpenseId(expense);
+          setAddedExpenseIds(prev => new Set([...prev, expenseId]));
+          
+          // 성공 알림
+          Alert.alert('성공', '지출이 추가되었습니다!');
           
         } catch (error) {
           console.error('개별 지출 추가 중 오류:', error);
@@ -190,32 +241,40 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
    * 모든 지출 일괄 추가
    */
   const handleAddAllExpenses = () => {
+    // 중복 제거된 지출만 필터링
+    const availableExpenses = filteredExpenses.filter(expense => 
+      !isExpenseAlreadyAdded(expense)
+    );
     
-    
-    if (parsedExpenses.length === 0) {
+    if (availableExpenses.length === 0) {
+      Alert.alert('알림', '추가할 수 있는 새로운 지출이 없습니다.');
       return;
     }
     
     Alert.alert(
       '일괄 추가',
-      `${parsedExpenses.length}개의 지출을 모두 추가하시겠습니까?`,
+      `${availableExpenses.length}개의 새로운 지출을 모두 추가하시겠습니까?`,
       [
         { text: '취소', style: 'cancel' },
         {
           text: '추가',
           onPress: async () => {
             try {
-              // 모든 지출을 순차적으로 추가
-              for (let i = 0; i < parsedExpenses.length; i++) {
-                const expense = parsedExpenses[i];
+              // 모든 새로운 지출을 순차적으로 추가
+              for (let i = 0; i < availableExpenses.length; i++) {
+                const expense = availableExpenses[i];
                 // 전체 추가이므로 shouldCloseModal을 true로 전달
                 await onExpenseAdd(expense, true);
+                
+                // 추가된 지출 ID를 추적 목록에 추가
+                const expenseId = generateExpenseId(expense);
+                setAddedExpenseIds(prev => new Set([...prev, expenseId]));
               }
               
               // 성공 알림과 함께 바로 모달 닫기 (홈 화면으로 이동)
               Alert.alert(
                 '성공', 
-                `${parsedExpenses.length}개의 지출이 추가되었습니다!`,
+                `${availableExpenses.length}개의 지출이 추가되었습니다!`,
                 [
                   {
                     text: '확인',
@@ -241,7 +300,13 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
    */
   const renderMessageCard = (message: SMSMessage, index: number) => {
     const parsedExpense = parsedExpenses[index];
-    
+    const isAlreadyAdded = parsedExpense ? isExpenseAlreadyAdded(parsedExpense) : false;
+
+    // 이미 추가된 항목은 표시하지 않음
+    if (isAlreadyAdded) {
+      return null;
+    }
+
     return (
       <View key={message.id} style={styles.messageCard}>
         <View style={styles.messageHeader}>
@@ -277,18 +342,47 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
             </View>
             
             <View style={styles.actionButtons}>
+              {/* 삭제 버튼 */}
               <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => handleEditExpense(parsedExpense, index)}
+                style={[styles.actionButton, styles.deleteButton]}
+                onPress={() => {
+                  Alert.alert(
+                    'SMS 삭제',
+                    '이 SMS를 목록에서 제거하시겠습니까?',
+                    [
+                      { text: '취소', style: 'cancel' },
+                      {
+                        text: '삭제',
+                        style: 'destructive',
+                        onPress: () => {
+                          // 해당 SMS를 목록에서 제거
+                          const updatedMessages = messages.filter((_, i) => i !== index);
+                          const updatedExpenses = parsedExpenses.filter((_, i) => i !== index);
+                          setMessages(updatedMessages);
+                          setParsedExpenses(updatedExpenses);
+                        }
+                      }
+                    ]
+                  );
+                }}
               >
-                <Text style={styles.editButtonText}>✏️ 편집</Text>
+                <Text style={styles.actionButtonIcon}>🗑️</Text>
               </TouchableOpacity>
               
+              {/* 편집 버튼 */}
               <TouchableOpacity
-                style={styles.addButton}
+                style={[styles.actionButton, styles.editButton]}
+                onPress={() => handleEditExpense(parsedExpense, index)}
+              >
+                <Text style={styles.actionButtonIcon}>✏️</Text>
+              </TouchableOpacity>
+              
+              {/* 추가 버튼 */}
+              <TouchableOpacity
+                style={[styles.actionButton, styles.addButton]}
                 onPress={() => handleExpenseAdd(parsedExpense, index)}
               >
-                <Text style={styles.addButtonText}>➕ 추가</Text>
+                <Text style={styles.actionButtonIcon}>➕</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -316,7 +410,7 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>SMS 자동 지출 추가</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -350,17 +444,37 @@ const SMSAutoExpenseModal: React.FC<SMSAutoExpenseModalProps> = ({
         {hasPermission && !loading && messages.length > 0 && (
           <ScrollView style={styles.content}>
             {/* 일괄 추가 버튼 */}
-            <TouchableOpacity
-              style={styles.addAllButton}
-              onPress={handleAddAllExpenses}
-            >
-              <Text style={styles.addAllButtonText}>
-                🚀 모든 지출 일괄 추가 ({parsedExpenses.length}개)
-              </Text>
-            </TouchableOpacity>
+            {filteredExpenses.length > 0 && (
+              <TouchableOpacity
+                style={styles.addAllButton}
+                onPress={handleAddAllExpenses}
+              >
+                <Text style={styles.addAllButtonText}>
+                  🚀 모든 지출 일괄 추가 ({filteredExpenses.length}개)
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {/* 메시지 카드들 */}
             {messages.map((message, index) => renderMessageCard(message, index))}
+            
+            {/* 이미 추가된 항목이 있는 경우 안내 메시지 */}
+            {addedExpenseIds.size > 0 && (
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoText}>
+                  💡 이미 추가된 지출 {addedExpenseIds.size}개는 표시되지 않습니다.
+                </Text>
+                <TouchableOpacity
+                  style={styles.resetButton}
+                  onPress={() => {
+                    setAddedExpenseIds(new Set());
+                    Alert.alert('알림', '추가된 지출 목록이 초기화되었습니다.');
+                  }}
+                >
+                  <Text style={styles.resetButtonText}>목록 초기화</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
         )}
 
@@ -570,14 +684,17 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   addAllButton: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     borderRadius: 12,
     marginBottom: 20,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   addAllButtonText: {
     fontSize: 18,
@@ -666,36 +783,49 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    marginTop: 16,
-    gap: 8,
+    justifyContent: 'space-around',
+    marginTop: 20,
+    paddingHorizontal: 20,
+    gap: 16,
   },
-  editButton: {
-    flex: 1,
-    backgroundColor: '#FEF3C7',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+  actionButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.surface,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F59E0B',
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    // 터치 피드백
+    activeOpacity: 0.7,
   },
-  editButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#92400E',
+  actionButtonIcon: {
+    fontSize: 24,
+    color: COLORS.surface, // 아이콘 색상을 흰색으로 설정
   },
-  addButton: {
-    flex: 1,
+  addAllButton: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginBottom: 20,
     alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  addButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'white',
+  addAllButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   emptyContainer: {
     flex: 1,
@@ -832,6 +962,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  infoContainer: {
+    backgroundColor: '#E0F2F7',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#065F77',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  resetButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  resetButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'white',
+  },
+  deleteButton: {
+    backgroundColor: COLORS.danger,
+    borderColor: COLORS.danger,
+  },
+  editButton: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  addButton: {
+    backgroundColor: '#81C784', // 차분한 민트 초록색
+    borderColor: '#81C784',
   },
 });
 

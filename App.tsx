@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import TabNavigator from './src/navigation/TabNavigator';
 import LoginScreen from './src/screens/LoginScreen';
 import GroupSelectionScreen from './src/screens/GroupSelectionScreen';
@@ -77,21 +78,23 @@ export default function App() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <NavigationContainer>
-        {!user ? (
-          // 로그인하지 않은 경우
-          <LoginScreen onLoginSuccess={() => {}} />
-        ) : hasGroup === false ? (
-          // 로그인했지만 그룹이 없는 경우
-          <GroupSelectionScreen onGroupSelected={handleGroupSelected} />
-        ) : (
-          // 로그인하고 그룹이 있는 경우
-          <TabNavigator />
-        )}
-      </NavigationContainer>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="dark" />
+        <NavigationContainer>
+          {!user ? (
+            // 로그인하지 않은 경우
+            <LoginScreen onLoginSuccess={() => {}} />
+          ) : hasGroup === false ? (
+            // 로그인했지만 그룹이 없는 경우
+            <GroupSelectionScreen onGroupSelected={handleGroupSelected} />
+          ) : (
+            // 로그인하고 그룹이 있는 경우
+            <TabNavigator />
+          )}
+        </NavigationContainer>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

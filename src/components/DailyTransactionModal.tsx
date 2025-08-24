@@ -17,6 +17,8 @@ interface DailyTransactionModalProps {
   onClose: () => void;
   selectedDate: Date | null;
   transactions: Transaction[];
+  onEditTransaction?: (transaction: Transaction) => void;
+  onDeleteTransaction?: (transactionId: string) => void;
 }
 
 const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
@@ -24,6 +26,8 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
   onClose,
   selectedDate,
   transactions,
+  onEditTransaction,
+  onDeleteTransaction,
 }) => {
   if (!selectedDate) return null;
 
@@ -72,12 +76,31 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
           )}
         </View>
         
-        <Text style={[
-          styles.transactionAmount,
-          transaction.type === 'income' ? styles.incomeAmount : styles.expenseAmount,
-        ]}>
-          {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-        </Text>
+        <View style={styles.transactionActions}>
+          <Text style={[
+            styles.transactionAmount,
+            transaction.type === 'income' ? styles.incomeAmount : styles.expenseAmount,
+          ]}>
+            {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+          </Text>
+          
+          {/* 수정/삭제 버튼 */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onEditTransaction?.(transaction)}
+            >
+              <Text style={styles.editButtonText}>수정</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => onDeleteTransaction?.(transaction.id)}
+            >
+              <Text style={styles.deleteButtonText}>삭제</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
       
       <Text style={styles.transactionTime}>
@@ -134,18 +157,6 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
               <Text style={styles.summaryLabel}>지출</Text>
               <Text style={[styles.summaryAmount, styles.expenseAmount]}>
                 -{formatCurrency(totalExpense)}
-              </Text>
-            </View>
-            
-            <View style={styles.summaryDivider} />
-            
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>순액</Text>
-              <Text style={[
-                styles.summaryAmount,
-                totalIncome - totalExpense >= 0 ? styles.incomeAmount : styles.expenseAmount,
-              ]}>
-                {totalIncome - totalExpense >= 0 ? '+' : ''}{formatCurrency(totalIncome - totalExpense)}
               </Text>
             </View>
           </View>
@@ -328,6 +339,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
     textAlign: 'right',
+  },
+  transactionActions: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  editButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+    borderWidth: 0,
+    minWidth: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontSize: 14,
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  deleteButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    borderWidth: 0,
+    minWidth: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    fontSize: 14,
+    color: '#EF4444',
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,

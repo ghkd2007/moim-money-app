@@ -9,6 +9,7 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
 import { Transaction } from '../types';
@@ -242,7 +243,7 @@ const CalendarScreen: React.FC = () => {
   console.log('CalendarScreen: 현재 연도:', currentDate.getFullYear());
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
       {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={goToPreviousMonth} style={styles.navButton}>
@@ -367,7 +368,7 @@ const CalendarScreen: React.FC = () => {
         onUpdate={handleTransactionUpdate}
         onDelete={handleTransactionDelete}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

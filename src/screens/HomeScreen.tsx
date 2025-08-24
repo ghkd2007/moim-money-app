@@ -10,6 +10,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SCREEN } from '../constants';
 import { formatCurrency, formatDate, formatDateShort } from '../utils';
 import { Transaction, Group } from '../types';
@@ -36,6 +37,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   
   // 예산 관련 상태
@@ -128,65 +130,30 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   /**
    * 빠른 추가 저장 핸들러
    */
-  const handleQuickAddSave = async (transaction: {
-    amount: number;
-    type: 'income' | 'expense';
-    categoryId: string;
-    memo: string;
-  }) => {
+  const handleQuickAddSave = async (transactionData: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const user = getCurrentUser();
-      if (!user || !currentGroup) {
-        Alert.alert('오류', '로그인이 필요하거나 그룹이 없습니다.');
-        return;
+      if (currentGroup) {
+        if (selectedTransaction) {
+          // 수정 모드
+          await transactionService.update(selectedTransaction.id, transactionData);
+          Alert.alert('성공', '거래 내역이 수정되었습니다.');
+        } else {
+          // 새로 추가 모드
+          await transactionService.create({
+            ...transactionData,
+            groupId: currentGroup.id,
+            userId: getCurrentUser()?.uid || '',
+          });
+          Alert.alert('성공', '거래 내역이 추가되었습니다.');
+        }
+        
+        // 데이터 새로고침
+        loadHomeData();
+        setShowQuickAddModal(false);
+        setSelectedTransaction(null);
       }
-
-      // Firebase에 거래 내역 저장
-      const transactionId = await transactionService.create({
-        amount: transaction.amount,
-        type: transaction.type,
-        categoryId: transaction.categoryId,
-        memo: transaction.memo,
-        date: new Date(),
-        groupId: currentGroup.id,
-        userId: user.uid,
-      });
-
-      // 새로운 거래 내역 객체 생성
-      const newTransaction: Transaction = {
-        id: transactionId,
-        amount: transaction.amount,
-        type: transaction.type,
-        categoryId: transaction.categoryId,
-        memo: transaction.memo,
-        date: new Date(),
-        groupId: currentGroup.id,
-        userId: user.uid,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-
-
-      // 월별 합계 업데이트
-      if (transaction.type === 'income') {
-        setMonthlyTotal(prev => ({
-          ...prev,
-          income: prev.income + transaction.amount,
-        }));
-      } else {
-        setMonthlyTotal(prev => ({
-          ...prev,
-          expense: prev.expense + transaction.amount,
-        }));
-      }
-
-      // 모달 닫기
-      setShowQuickAddModal(false);
-      Alert.alert('완료', '거래 내역이 저장되었습니다!');
     } catch (error) {
-      console.error('거래 내역 저장 실패:', error);
-      Alert.alert('오류', '거래 내역을 저장하는 중 오류가 발생했습니다.');
+      Alert.alert('오류', '거래 내역 저장에 실패했습니다.');
     }
   };
 
@@ -258,6 +225,38 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     }
   };
 
+  // 거래 내역 수정/삭제 핸들러
+  const handleEditTransaction = (transaction: Transaction) => {
+    // 수정 모달 열기 (QuickAddModal을 수정 모드로 사용)
+    setSelectedTransaction(transaction);
+    setShowQuickAddModal(true);
+  };
+
+  const handleDeleteTransaction = async (transactionId: string) => {
+    Alert.alert(
+      '거래 내역 삭제',
+      '정말로 이 거래 내역을 삭제하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (currentGroup) {
+                await transactionService.delete(transactionId);
+                // 데이터 새로고침
+                loadHomeData();
+                Alert.alert('성공', '거래 내역이 삭제되었습니다.');
+              }
+            } catch (error) {
+              Alert.alert('오류', '거래 내역 삭제에 실패했습니다.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
 
   // 예산 월 변경 핸들러
@@ -333,7 +332,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.groupSwitcher} onPress={handleGroupSwitch}>
@@ -589,6 +588,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         visible={showQuickAddModal}
         onClose={() => setShowQuickAddModal(false)}
         onSave={handleQuickAddSave}
+        transactionToEdit={selectedTransaction}
       />
 
       {/* 날짜별 거래 내역 모달 */}
@@ -597,6 +597,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={() => setShowDailyModal(false)}
         selectedDate={selectedDate}
         transactions={monthlyTransactions}
+        onEditTransaction={handleEditTransaction}
+        onDeleteTransaction={handleDeleteTransaction}
       />
 
       {/* SMS 자동 지출 추가 모달 */}
@@ -607,7 +609,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       />
 
 
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -655,7 +657,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   switchIcon: {
-    fontSize: 12,
+    fontSize: 10,
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
@@ -664,7 +666,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   notificationIcon: {
-    fontSize: 20,
+    fontSize: 16,
   },
   notificationBadge: {
     position: 'absolute',
@@ -718,7 +720,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statIcon: {
-    fontSize: 20,
+    fontSize: 16,
     marginRight: 8,
   },
   statLabel: {
@@ -863,11 +865,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   quickAddIcon: {
-    fontSize: 24,
+    fontSize: 20,
     marginRight: 12,
   },
   quickAddText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.surface,
   },
@@ -891,11 +893,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   smsButtonIcon: {
-    fontSize: 20,
+    fontSize: 18,
     marginRight: 10,
   },
   smsButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#92400E', // 진한 노란색 텍스트
   },
@@ -947,7 +949,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   monthButtonText: {
-    fontSize: 18,
+    fontSize: 14,
     color: COLORS.primary,
     fontWeight: '600',
   },
@@ -1075,17 +1077,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     left: '50%',
-    transform: [{ translateX: -14 }], // 중앙 정렬을 위해 절반 크기로 조정
+    transform: [{ translateX: -12 }], // 중앙 정렬을 위해 절반 크기로 조정
     backgroundColor: '#FF9800', // 오렌지 색상
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    minWidth: 30,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    minWidth: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   transactionAmount: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: 'white',
   },

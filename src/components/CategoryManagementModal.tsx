@@ -30,7 +30,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
+  const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0] || "💰");
 
   useEffect(() => {
     if (visible) {
@@ -58,11 +58,11 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
     if (category) {
       setEditingCategory(category);
       setNewCategoryName(category.name);
-      setSelectedIcon(category.icon || CATEGORY_ICONS[0]);
+      setSelectedIcon(category.icon || CATEGORY_ICONS[0] || "💰");
     } else {
       setEditingCategory(null);
       setNewCategoryName('');
-      setSelectedIcon(CATEGORY_ICONS[0]);
+      setSelectedIcon(CATEGORY_ICONS[0] || "💰");
     }
     setShowAddModal(true);
   };

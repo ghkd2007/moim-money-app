@@ -57,5 +57,23 @@ export interface Invitation {
 	expiresAt: Date;
 }
 
+// 예산 관련 타입
+export interface Budget {
+	id: string;
+	groupId: string;
+	year: number;
+	month: number;
+	totalBudget: number;
+	totalSpent: number;
+	remainingBudget: number;
+	createdAt: Date;
+	updatedAt: Date;
+}
 
-
+export interface BudgetSummary {
+	budget: Budget;
+	categoryBudgets: any[]; // 빈 배열로 유지 (기존 코드 호환성)
+	totalSpent: number;
+	totalRemaining: number;
+	overspentCategories: any[]; // 빈 배열로 유지 (기존 코드 호환성)
+}

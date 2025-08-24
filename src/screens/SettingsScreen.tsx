@@ -9,6 +9,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { logout } from '../services/authService';
 
@@ -328,7 +329,7 @@ const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.title}>설정</Text>
@@ -347,7 +348,7 @@ const SettingsScreen: React.FC = () => {
         {/* 하단 여백 */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
