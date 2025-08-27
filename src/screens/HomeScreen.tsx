@@ -20,6 +20,7 @@ import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
+import { useGlobalContext } from '../../App';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,9 @@ interface HomeScreenProps {
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = () => {
+  // 전역 컨텍스트 사용
+  const { triggerRefresh } = useGlobalContext();
+  
   // 상태 관리
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [monthlyTotal, setMonthlyTotal] = useState({ income: 0, expense: 0 });
@@ -149,6 +153,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         
         // 데이터 새로고침
         loadHomeData();
+        
+        // 전역 새로고침 트리거 (모든 화면 업데이트)
+        triggerRefresh();
+        
         setShowQuickAddModal(false);
         setSelectedTransaction(null);
       }
@@ -211,6 +219,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       // 홈 데이터 새로고침
       await loadHomeData();
       
+      // 전역 새로고침 트리거 (모든 화면 업데이트)
+      triggerRefresh();
+      
       // shouldCloseModal이 true일 때만 모달 닫기
       if (shouldCloseModal) {
         setShowSMSModal(false);
@@ -233,6 +244,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   };
 
   const handleDeleteTransaction = async (transactionId: string) => {
+    console.log('삭제 시도:', transactionId); // 디버깅 로그 추가
+    
     Alert.alert(
       '거래 내역 삭제',
       '정말로 이 거래 내역을 삭제하시겠습니까?',
@@ -243,13 +256,25 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('삭제 실행 중...'); // 디버깅 로그 추가
+              
               if (currentGroup) {
                 await transactionService.delete(transactionId);
+                console.log('삭제 성공'); // 디버깅 로그 추가
+                
                 // 데이터 새로고침
                 loadHomeData();
+                
+                // 전역 새로고침 트리거 (모든 화면 업데이트)
+                triggerRefresh();
+                
                 Alert.alert('성공', '거래 내역이 삭제되었습니다.');
+              } else {
+                console.log('현재 그룹이 없음'); // 디버깅 로그 추가
+                Alert.alert('오류', '그룹이 선택되지 않았습니다.');
               }
             } catch (error) {
+              console.error('삭제 오류:', error); // 디버깅 로그 추가
               Alert.alert('오류', '거래 내역 삭제에 실패했습니다.');
             }
           },
@@ -563,10 +588,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         </View>
 
         {/* 기록하기 버튼 */}
-        <TouchableOpacity style={styles.quickAddButton} onPress={handleQuickAdd}>
+        {/* <TouchableOpacity style={styles.quickAddButton} onPress={handleQuickAdd}>
           <Text style={styles.quickAddIcon}>✏️</Text>
           <Text style={styles.quickAddText}>기록하기</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* SMS 자동 지출 추가 버튼 */}
         <TouchableOpacity 
@@ -608,6 +633,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onExpenseAdd={handleSMSExpenseAdd}
       />
 
+      {/* 플로팅 기록하기 버튼 */}
+      <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
+        <Text style={styles.floatingButtonIcon}>✏️</Text>
+      </TouchableOpacity>
 
     </SafeAreaView>
   );
@@ -1096,6 +1125,28 @@ const styles = StyleSheet.create({
   },
   expenseAmount: {
     color: '#DC2626', // 빨간색
+  },
+
+  // 플로팅 기록하기 버튼
+  floatingButton: {
+    position: 'absolute',
+    bottom: 80, // 탭 바 높이만큼 위로 이동
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  floatingButtonIcon: {
+    fontSize: 28,
+    color: 'white',
   },
 });
 

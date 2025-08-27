@@ -16,6 +16,7 @@ import { getCurrentUser } from '../services/authService';
 import { groupService, userService, transactionService } from '../services/dataService';
 import { Group, User, Transaction } from '../types';
 import CategoryManagementModal from '../components/CategoryManagementModal';
+import { useGlobalContext } from '../../App';
 
 interface MemberStats extends User {
   isOwner: boolean;
@@ -28,6 +29,9 @@ interface MemberStats extends User {
 
 
 const GroupScreen: React.FC = () => {
+  // 전역 컨텍스트 사용
+  const { refreshTrigger } = useGlobalContext();
+  
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [memberStats, setMemberStats] = useState<MemberStats[]>([]);
@@ -39,6 +43,29 @@ const GroupScreen: React.FC = () => {
   useEffect(() => {
     loadGroupData();
   }, []);
+
+  // 전역 새로고침 트리거가 변경될 때마다 통계 재계산
+  useEffect(() => {
+    if (currentGroup && refreshTrigger > 0) {
+      loadMemberStatistics(currentGroup);
+    }
+  }, [refreshTrigger, currentGroup]);
+
+  // 현재 그룹이 변경될 때마다 실시간 구독 설정
+  useEffect(() => {
+    if (!currentGroup) return;
+
+    // 실시간 거래 내역 구독 설정
+    const unsubscribe = transactionService.subscribeToGroup(
+      currentGroup.id,
+      async (transactions) => {
+        // 거래 내역이 변경될 때마다 통계 재계산
+        await loadMemberStatistics(currentGroup);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [currentGroup]);
 
   /**
    * 모임 데이터 로드
@@ -112,7 +139,7 @@ const GroupScreen: React.FC = () => {
   };
 
   /**
-   * 구성원별 통계 계산
+   * 구성원별 통계 계산 - 삭제된 거래 내역 제외
    */
   const calculateMemberStats = async (groupId: string, userId: string) => {
     try {
@@ -123,13 +150,18 @@ const GroupScreen: React.FC = () => {
       // 이번 달 기준으로 고정
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // 해당 기간의 모든 거래 내역 가져오기 (임시로 모든 거래를 가져온 후 필터링)
-      const allTransactions = await transactionService.getByGroup(groupId, 1000);
+      // 해당 기간의 모든 거래 내역 가져오기 (더 많은 거래 내역을 가져와서 정확한 통계 계산)
+      const allTransactions = await transactionService.getByGroup(groupId, 5000);
       
-      // 사용자별, 기간별 필터링
+      // 사용자별, 기간별 필터링 (삭제된 거래 내역은 이미 Firestore에서 제거됨)
       const userTransactions = allTransactions.filter(transaction => 
         transaction.userId === userId && 
-        new Date(transaction.date) >= startDate
+        new Date(transaction.date) >= startDate &&
+        transaction.amount > 0 && // 유효한 금액만 포함
+        transaction.amount !== null && 
+        transaction.amount !== undefined &&
+        transaction.id && // 유효한 ID가 있는 경우만
+        transaction.categoryId // 카테고리가 있는 경우만
       );
 
       const income = userTransactions

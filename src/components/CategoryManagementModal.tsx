@@ -8,10 +8,13 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
-import { COLORS, CATEGORY_ICONS } from '../constants';
+import { COLORS, CATEGORY_ICONS, DEFAULT_CATEGORIES } from '../constants';
 import { Category } from '../types';
 import { categoryService } from '../services/dataService';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 interface CategoryManagementModalProps {
   visible: boolean;
@@ -30,7 +33,9 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0] || "💰");
+  const [selectedIcon, setSelectedIcon] = useState<string>(CATEGORY_ICONS[0] || "💰");
+  const [currentPage, setCurrentPage] = useState(0);
+  const iconsPerPage = 16; // 4x4 그리드 (한 페이지당 16개 아이콘)
 
   useEffect(() => {
     if (visible) {
@@ -44,7 +49,21 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   const loadCategories = async () => {
     try {
       const loadedCategories = await categoryService.getByGroup(groupId);
-      setCategories(loadedCategories);
+      
+      // 기본 카테고리와 그룹별 카테고리를 합쳐서 표시
+      const allCategories = [
+        // 기본 카테고리들을 먼저 표시
+        ...DEFAULT_CATEGORIES.map(defaultCat => ({
+          ...defaultCat,
+          id: `default-${defaultCat.name}`,
+          groupId: groupId,
+          createdAt: new Date(),
+        })),
+        // 그룹별 카테고리들
+        ...loadedCategories.filter(cat => !cat.isDefault)
+      ];
+      
+      setCategories(allCategories);
     } catch (error) {
       console.error('Error loading categories:', error);
       Alert.alert('오류', '카테고리를 불러올 수 없습니다.');
@@ -64,6 +83,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
       setNewCategoryName('');
       setSelectedIcon(CATEGORY_ICONS[0] || "💰");
     }
+    setCurrentPage(0); // 페이지 리셋
     setShowAddModal(true);
   };
 
@@ -77,11 +97,13 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
     }
 
     if (editingCategory) {
-      // 수정
+      // 수정 - 기본 카테고리도 수정 가능
       try {
         await categoryService.update(editingCategory.id, {
           name: newCategoryName.trim(),
           icon: selectedIcon,
+          // 기본 카테고리인 경우 isDefault 속성 유지
+          isDefault: editingCategory.isDefault,
         });
         setCategories(prev => prev.map(cat => 
           cat.id === editingCategory.id 
@@ -89,6 +111,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
             : cat
         ));
         Alert.alert('완료', '카테고리가 수정되었습니다.');
+        onCategoryChange();
       } catch (error) {
         console.error('Error updating category:', error);
         Alert.alert('오류', '카테고리를 수정할 수 없습니다.');
@@ -107,6 +130,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
         await categoryService.create(newCategory);
         setCategories(prev => [...prev, newCategory]);
         Alert.alert('완료', '카테고리가 추가되었습니다.');
+        onCategoryChange();
       } catch (error) {
         console.error('Error adding category:', error);
         Alert.alert('오류', '카테고리를 추가할 수 없습니다.');
@@ -114,7 +138,6 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
     }
 
     setShowAddModal(false);
-    onCategoryChange();
   };
 
   /**
@@ -186,27 +209,99 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   );
 
   /**
-   * 아이콘 선택기 렌더링
+   * 아이콘 선택기 렌더링 - 강제 4x4 그리드
    */
-  const renderIconPicker = () => (
-    <View style={styles.iconPicker}>
-      <Text style={styles.iconPickerTitle}>아이콘 선택</Text>
-      <View style={styles.iconGrid}>
-        {CATEGORY_ICONS.map((icon, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.iconOption,
-              selectedIcon === icon && styles.selectedIconOption,
-            ]}
-            onPress={() => setSelectedIcon(icon)}
-          >
-            <Text style={styles.iconOptionText}>{icon}</Text>
-          </TouchableOpacity>
-        ))}
+  const renderIconPicker = () => {
+    const startIndex = currentPage * iconsPerPage;
+    const endIndex = startIndex + iconsPerPage;
+    const currentIcons = CATEGORY_ICONS.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(CATEGORY_ICONS.length / iconsPerPage);
+
+    // 강제 4x4 그리드 계산
+    const gridSize = Math.min(screenWidth - 80, 300); // 최대 300px로 제한
+    const iconSize = gridSize / 4; // 정확히 4등분
+    const gridPadding = 20;
+
+    console.log(`그리드 크기: ${gridSize}px, 아이콘 크기: ${iconSize}px`);
+
+    // 4x4 그리드 위치 계산 함수
+    const getIconPosition = (index: number) => {
+      const row = Math.floor(index / 4);
+      const col = index % 4;
+      const left = col * iconSize + gridPadding;
+      const top = row * iconSize + gridPadding;
+      return { left, top };
+    };
+
+    return (
+      <View style={styles.iconPicker}>
+        <Text style={styles.iconPickerTitle}>아이콘 선택</Text>
+        
+        {/* 강제 4x4 그리드 */}
+        <View style={[
+          styles.forcedIconGrid,
+          {
+            width: gridSize + gridPadding * 2,
+            height: gridSize + gridPadding * 2,
+          }
+        ]}>
+          {currentIcons.map((icon, index) => {
+            const position = getIconPosition(index);
+            return (
+              <TouchableOpacity
+                key={startIndex + index}
+                style={[
+                  styles.forcedIconButton,
+                  {
+                    position: 'absolute',
+                    left: position.left,
+                    top: position.top,
+                    width: iconSize - 4,
+                    height: iconSize - 4,
+                  },
+                  selectedIcon === icon && styles.forcedIconButtonSelected,
+                ]}
+                onPress={() => setSelectedIcon(icon)}
+              >
+                <Text style={styles.forcedIconText}>{icon}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <View style={styles.forcedPagination}>
+            <TouchableOpacity
+              style={[
+                styles.forcedPageButton,
+                currentPage === 0 && styles.forcedPageButtonDisabled
+              ]}
+              onPress={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+              disabled={currentPage === 0}
+            >
+              <Text style={styles.forcedPageButtonText}>◀</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.forcedPageInfo}>
+              {currentPage + 1} / {totalPages}
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.forcedPageButton,
+                currentPage === totalPages - 1 && styles.forcedPageButtonDisabled
+              ]}
+              onPress={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+              disabled={currentPage === totalPages - 1}
+            >
+              <Text style={styles.forcedPageButtonText}>▶</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <>
@@ -477,27 +572,72 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 12,
   },
-  iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  // 강제 4x4 그리드 스타일
+  forcedIconGrid: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    marginBottom: 20,
+    alignSelf: 'center',
+    position: 'relative',
   },
-  iconOption: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: COLORS.surface,
+  forcedIconButton: {
+    borderRadius: 8,
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  selectedIconOption: {
+  forcedIconButtonSelected: {
     borderColor: COLORS.primary,
     backgroundColor: '#EEF2FF',
+    borderWidth: 2,
   },
-  iconOptionText: {
-    fontSize: 24,
+  forcedIconText: {
+    fontSize: 18,
+    color: COLORS.text,
+  },
+  // 강제 페이지네이션 스타일
+  forcedPagination: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 24,
+    paddingHorizontal: 20,
+  },
+  forcedPageButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  forcedPageButtonDisabled: {
+    backgroundColor: '#CBD5E1',
+  },
+  forcedPageButtonText: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: '600',
+  },
+  forcedPageInfo: {
+    fontSize: 16,
+    color: COLORS.text,
+    fontWeight: '600',
+    minWidth: 60,
+    textAlign: 'center',
   },
   previewSection: {
     marginBottom: 24,

@@ -235,7 +235,6 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* 수입/지출 토글 */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>유형</Text>
             <View style={styles.typeToggle}>
               <TouchableOpacity
                 style={[styles.typeButton, type === 'expense' && styles.typeButtonActive]}
@@ -256,9 +255,115 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
             </View>
           </View>
 
-          {/* 날짜 및 시간 선택 */}
+          {/* 금액 입력 */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>날짜 및 시간</Text>
+            <Text style={styles.sectionTitle}>금액</Text>
+            <View style={styles.amountDisplayContainer}>
+              <Text style={styles.currencySymbol}>₩</Text>
+              <Text style={styles.amountDisplay}>
+                {amount ? formatCurrency(parseInt(amount) || 0).replace('₩', '') : '0'}
+              </Text>
+            </View>
+            
+            {/* 계산기 스타일 숫자 키패드 */}
+            <View style={styles.calculatorContainer}>
+              <View style={styles.calculatorRow}>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '1')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>1</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '2')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>2</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '3')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>3</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.calculatorRow}>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '4')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>4</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '5')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>5</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '6')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>6</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.calculatorRow}>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '7')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>7</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '8')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>8</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '9')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>9</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.calculatorRow}>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '0')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>0</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.calculatorButton} 
+                  onPress={() => setAmount(prev => prev + '00')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.calculatorButtonText}>00</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.calculatorButton, styles.deleteButton]} 
+                  onPress={() => setAmount(prev => prev.slice(0, -1))}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.calculatorButtonText, styles.deleteButtonText]}>⌫</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* 날짜 및 시간 선택 */}
+          <View style={[styles.section, styles.dateTimeSection]}>
             <View style={styles.dateTimeContainer}>
               {/* 날짜 섹션 */}
               <View style={styles.dateContainer}>
@@ -439,115 +544,8 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
             </View>
           </View>
 
-          {/* 금액 입력 */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>금액</Text>
-            <View style={styles.amountDisplayContainer}>
-              <Text style={styles.currencySymbol}>₩</Text>
-              <Text style={styles.amountDisplay}>
-                {amount ? formatCurrency(parseInt(amount) || 0).replace('₩', '') : '0'}
-              </Text>
-            </View>
-            
-            {/* 계산기 스타일 숫자 키패드 */}
-            <View style={styles.calculatorContainer}>
-              <View style={styles.calculatorRow}>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '1')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '2')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '3')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>3</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.calculatorRow}>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '4')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>4</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '5')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>5</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '6')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>6</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.calculatorRow}>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '7')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>7</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '8')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>8</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '9')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>9</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.calculatorRow}>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '0')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>0</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.calculatorButton} 
-                  onPress={() => setAmount(prev => prev + '00')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.calculatorButtonText}>00</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.calculatorButton, styles.deleteButton]} 
-                  onPress={() => setAmount(prev => prev.slice(0, -1))}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.calculatorButtonText, styles.deleteButtonText]}>⌫</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
           {/* 카테고리 선택 */}
-          <View style={styles.section}>
+          <View style={[styles.section, styles.categorySection]}>
             <Text style={styles.sectionTitle}>카테고리</Text>
             
             {/* 그룹별 카테고리 섹션 */}
@@ -578,7 +576,6 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
             )}
             
             {/* 기본 카테고리 섹션 */}
-            <Text style={styles.categorySectionTitle}>📋 기본 카테고리</Text>
             <View style={styles.categoryGrid}>
               {DEFAULT_CATEGORIES.map((category, index) => (
                 <TouchableOpacity
@@ -666,7 +663,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   section: {
-    marginTop: 20,
+    marginBottom: 12, // 16에서 12로 줄임
   },
   sectionTitle: {
     fontSize: 16,
@@ -678,7 +675,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textSecondary,
-    marginTop: 16,
     marginBottom: 8,
   },
   typeToggle: {
@@ -800,6 +796,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    // marginBottom 제거 - 불필요한 여백 정리
   },
   categoryButton: {
     width: '30%',
@@ -824,12 +821,13 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 12,
-    fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
+    marginTop: 4,
   },
   categoryTextActive: {
     color: COLORS.surface,
+    fontWeight: '600',
   },
   memoInput: {
     backgroundColor: COLORS.surface,
@@ -975,11 +973,11 @@ const styles = StyleSheet.create({
   },
   timeScrollContainer: {
     width: 65, // 날짜와 정확히 동일하게 맞춤
-    height: 140,
+    height: 120, // 원래 높이로 복원 (3개 항목이 보이도록)
+    backgroundColor: '#F8FAFC',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
   },
   timeScrollContent: {
@@ -1059,11 +1057,11 @@ const styles = StyleSheet.create({
   },
   dateScrollContainer: {
     width: 65, // 시간과 정확히 동일하게 맞춤
-    height: 140,
+    height: 120, // 원래 높이로 복원 (3개 항목이 보이도록)
+    backgroundColor: '#F8FAFC',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
   },
   dateScrollContent: {
@@ -1142,6 +1140,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.primary,
     fontWeight: '700',
+  },
+  noCategoryContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noCategoryText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  noCategorySubText: {
+    fontSize: 14,
+    color: COLORS.textTertiary,
+  },
+  dateTimeSection: {
+    marginBottom: 20, // 날짜/시간 섹션과 카테고리 사이 여백 추가
+  },
+  categorySection: {
+    marginBottom: 12, // 20에서 12로 줄여서 메모와의 간격 조정
   },
 });
 

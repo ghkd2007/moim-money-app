@@ -49,7 +49,7 @@ export const transactionService = {
 		}
 	},
 
-	// 그룹별 거래 내역 조회
+	// 그룹별 거래 내역 조회 - 클라이언트에서 정렬
 	async getByGroup(
 		groupId: string,
 		limitCount: number = 50
@@ -62,13 +62,26 @@ export const transactionService = {
 			);
 
 			const querySnapshot = await getDocs(q);
-			return querySnapshot.docs.map((doc) => ({
+			const transactions = querySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				...doc.data(),
 				date: doc.data().date.toDate(),
 				createdAt: doc.data().createdAt.toDate(),
 				updatedAt: doc.data().updatedAt.toDate(),
 			})) as Transaction[];
+
+			// 유효한 거래 내역만 필터링 (amount가 0보다 큰 경우만)
+			const validTransactions = transactions.filter(
+				(transaction) =>
+					transaction.amount > 0 &&
+					transaction.amount !== null &&
+					transaction.amount !== undefined
+			);
+
+			// 클라이언트에서 날짜순 정렬 (최신순)
+			return validTransactions.sort(
+				(a, b) => b.date.getTime() - a.date.getTime()
+			);
 		} catch (error) {
 			console.error("거래 내역 조회 오류:", error);
 			throw new Error("거래 내역을 불러올 수 없습니다.");
@@ -177,7 +190,7 @@ export const transactionService = {
 		}
 	},
 
-	// 실시간 거래 내역 구독
+	// 실시간 거래 내역 구독 - 클라이언트에서 정렬
 	subscribeToGroup(
 		groupId: string,
 		callback: (transactions: Transaction[]) => void
@@ -185,7 +198,6 @@ export const transactionService = {
 		const q = query(
 			collection(db, "transactions"),
 			where("groupId", "==", groupId),
-			orderBy("date", "desc"),
 			limit(100)
 		);
 
@@ -198,7 +210,20 @@ export const transactionService = {
 				updatedAt: doc.data().updatedAt.toDate(),
 			})) as Transaction[];
 
-			callback(transactions);
+			// 유효한 거래 내역만 필터링
+			const validTransactions = transactions.filter(
+				(transaction) =>
+					transaction.amount > 0 &&
+					transaction.amount !== null &&
+					transaction.amount !== undefined
+			);
+
+			// 클라이언트에서 날짜순 정렬 (최신순)
+			const sortedTransactions = validTransactions.sort(
+				(a, b) => b.date.getTime() - a.date.getTime()
+			);
+
+			callback(sortedTransactions);
 		});
 	},
 };

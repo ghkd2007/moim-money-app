@@ -1,0 +1,10 @@
+[33meb2bd81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m  React Navigation 완전 제거 - Expo Router만 사용하도록 정리
+[33m733b330[m  중복 네비게이션 완전 해결 - 순수한 라우팅만 담당하도록 단순화
+[33me426b6d[m  중복 네비게이션 문제 해결 - 인증 상태별 다른 레이아웃 사용
+[33m3597960[m  하단 탭 네비게이션 추가 - Expo Router Tabs 컴포넌트로 구현
+[33md6961e9[m  Expo Router 완전 전환 - React Navigation 제거 및 파일 기반 라우팅 구현
+[33mb2badc6[m  Expo Router 구조 재설계 - Stack 기반 라우팅으로 변경
+[33m03f538e[m  Expo Router 구조 수정 - 중첩 NavigationContainer 문제 해결 및 _layout.tsx 추가
+[33md436d4d[m  Expo Router 구조 적용 - main 엔트리 변경 및 app/index.tsx 생성
+[33mca73041[m  Expo Router 구조로 전환 시작 - Firebase 설정 최적화 및 플랫폼별 Auth 설정
+[33mb51248a[m 더미 데이터 제거 및 Firebase 연동으로 카테고리 관리 개선
