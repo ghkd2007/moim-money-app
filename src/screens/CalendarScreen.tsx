@@ -439,7 +439,13 @@ const CalendarScreen: React.FC = () => {
                   >
                     <View style={styles.transactionInfo}>
                       <View style={styles.categoryContainer}>
-                        <Text style={styles.categoryIcon}>{getCategoryIcon(item.categoryId)}</Text>
+                        <Text style={styles.categoryIcon}>
+                          {(() => {
+                            const icon = getCategoryIcon(item.categoryId);
+                            console.log('CalendarScreen: 렌더링에서 getCategoryIcon 결과:', icon);
+                            return icon;
+                          })()}
+                        </Text>
                         <Text style={styles.transactionCategory}>{getCategoryName(item.categoryId)}</Text>
                       </View>
                       <Text style={styles.transactionMemo}>{item.memo}</Text>
