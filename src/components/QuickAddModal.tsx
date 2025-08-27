@@ -373,9 +373,6 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
               <View style={styles.dateContainer}>
                 <View style={styles.dateHeader}>
                   <Text style={styles.dateTitle}>날짜</Text>
-                  <TouchableOpacity style={styles.todayButton} onPress={goToToday}>
-                    <Text style={styles.todayButtonText}>📅</Text>
-                  </TouchableOpacity>
                 </View>
                 
                 {/* 월/일 스크롤 */}
@@ -480,7 +477,12 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
 
               {/* 시간 섹션 */}
               <View style={styles.timeContainer}>
-                <Text style={styles.timeTitle}>시간</Text>
+                <View style={styles.timeHeader}>
+                  <Text style={styles.timeTitle}>시간</Text>
+                  <TouchableOpacity style={styles.todayButton} onPress={goToToday}>
+                    <Text style={styles.todayButtonText}>📅</Text>
+                  </TouchableOpacity>
+                </View>
                 
                 {/* 시/분 스크롤 */}
                 <View style={styles.timeInputRow}>
@@ -1090,7 +1092,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     width: '100%',
-    position: 'relative', // 오늘 버튼을 절대 위치로 배치하기 위해
+  },
+  timeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    width: '100%',
   },
   dateTitle: {
     fontSize: 14,
