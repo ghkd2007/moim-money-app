@@ -35,6 +35,28 @@ const CalendarScreen: React.FC = () => {
     console.log('CalendarScreen: DEFAULT_CATEGORIES 길이:', DEFAULT_CATEGORIES.length);
     console.log('CalendarScreen: 의료비 카테고리 찾기 테스트:', DEFAULT_CATEGORIES.find(cat => cat.name === '의료비'));
     
+    // getCategoryIcon 함수 직접 테스트
+    console.log('=== getCategoryIcon 함수 직접 테스트 ===');
+    console.log('의료비 테스트:', getCategoryIcon('의료비'));
+    console.log('에덴이 테스트:', getCategoryIcon('에덴이'));
+    console.log('식비 테스트:', getCategoryIcon('식비'));
+    console.log('=== 테스트 끝 ===');
+    
+    // 시간 변환 테스트
+    console.log('=== 시간 변환 테스트 ===');
+    const testDate1 = new Date('2025-08-27T03:45:22.883Z');
+    const testDate2 = new Date('2025-08-27T11:52:43.820Z');
+    
+    const koreanTime1 = new Date(testDate1.getTime() + (9 * 60 * 60 * 1000));
+    const koreanTime2 = new Date(testDate2.getTime() + (9 * 60 * 60 * 1000));
+    
+    console.log('원본 UTC 시간 1:', testDate1.toISOString());
+    console.log('한국 시간 1:', koreanTime1.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }));
+    
+    console.log('원본 UTC 시간 2:', testDate2.toISOString());
+    console.log('한국 시간 2:', koreanTime2.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }));
+    console.log('=== 시간 테스트 끝 ===');
+    
     return () => {
       console.log('CalendarScreen: 컴포넌트 언마운트됨');
     };
