@@ -48,30 +48,28 @@ const CalendarScreen: React.FC = () => {
 
   /**
    * 카테고리 아이콘 가져오기
+   * categoryId는 실제로 카테고리 이름이 저장되어 있음
    */
-  const getCategoryIcon = (categoryId: string): string => {
+  const getCategoryIcon = (categoryName: string): string => {
     console.log('=== getCategoryIcon 디버깅 시작 ===');
-    console.log('CalendarScreen: getCategoryIcon 호출 - categoryId:', categoryId);
+    console.log('CalendarScreen: getCategoryIcon 호출 - categoryName:', categoryName);
     
-    // 하드코딩 테스트 - 의료비는 무조건 🏥 반환
-    if (categoryId === '의료비') {
-      console.log('CalendarScreen: 의료비 하드코딩 매칭 - 🏥 반환');
-      return '🏥';
-    }
-    
-    // 에덴이는 🎁 반환 (선물 아이콘)
-    if (categoryId === '에덴이') {
-      console.log('CalendarScreen: 에덴이 하드코딩 매칭 - 🎁 반환');
-      return '🎁';
-    }
-    
-    // 기본 카테고리에서 찾기
-    const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryId);
+    // 먼저 기본 카테고리에서 이름으로 찾기
+    const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryName);
     console.log('CalendarScreen: 기본 카테고리에서 찾은 결과:', defaultCategory);
     
     if (defaultCategory) {
       console.log('CalendarScreen: 기본 카테고리 아이콘 반환:', defaultCategory.icon);
       return defaultCategory.icon;
+    }
+    
+    // 그룹 카테고리에서 이름으로 찾기
+    const groupCategory = categories.find(cat => cat.name === categoryName);
+    console.log('CalendarScreen: 그룹 카테고리에서 찾은 결과:', groupCategory);
+    
+    if (groupCategory) {
+      console.log('CalendarScreen: 그룹 카테고리 아이콘 반환:', groupCategory.icon);
+      return groupCategory.icon || '📁';
     }
     
     console.log('CalendarScreen: 매칭되는 카테고리 없음, 기본 아이콘 반환: 💰');
@@ -81,33 +79,13 @@ const CalendarScreen: React.FC = () => {
 
   /**
    * 카테고리 이름 가져오기
+   * categoryId는 실제로 카테고리 이름이 저장되어 있음
    */
-  const getCategoryName = (categoryId: string): string => {
-    console.log('CalendarScreen: getCategoryName 호출 - categoryId:', categoryId);
+  const getCategoryName = (categoryName: string): string => {
+    console.log('CalendarScreen: getCategoryName 호출 - categoryName:', categoryName);
     
-    // 먼저 기본 카테고리에서 찾기 (가장 먼저 확인)
-    const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryId);
-    console.log('CalendarScreen: 기본 카테고리에서 찾은 이름:', defaultCategory?.name);
-    if (defaultCategory) {
-      return defaultCategory.name;
-    }
-    
-    // 그룹 카테고리에서 이름으로 찾기
-    const groupCategoryByName = categories.find(cat => cat.name === categoryId);
-    console.log('CalendarScreen: 이름으로 찾은 그룹 카테고리 이름:', groupCategoryByName?.name);
-    if (groupCategoryByName) {
-      return groupCategoryByName.name;
-    }
-    
-    // 그룹 카테고리에서 ID로 찾기
-    const groupCategory = categories.find(cat => cat.id === categoryId);
-    console.log('CalendarScreen: ID로 찾은 그룹 카테고리 이름:', groupCategory?.name);
-    if (groupCategory) {
-      return groupCategory.name;
-    }
-    
-    console.log('CalendarScreen: 매칭되는 카테고리 없음, 원본 값 반환:', categoryId);
-    return categoryId; // 찾을 수 없는 경우 원본 값 반환
+    // 카테고리 이름이 그대로 저장되어 있으므로 그대로 반환
+    return categoryName;
   };
 
   /**
@@ -150,10 +128,20 @@ const CalendarScreen: React.FC = () => {
         console.log('CalendarScreen: transactions 상태 업데이트 완료, 개수:', monthTransactions.length);
         
         // 데이터 로드 완료 후 함수 테스트
-        console.log('=== getCategoryIcon 함수 테스트 ===');
-        console.log('의료비 테스트:', getCategoryIcon('의료비'));
-        console.log('에덴이 테스트:', getCategoryIcon('에덴이'));
-        console.log('=== 함수 테스트 끝 ===');
+        console.log('=== getCategoryIcon 함수 테스트 시작 ===');
+        try {
+          const medicalIcon = getCategoryIcon('의료비');
+          console.log('의료비 테스트 결과:', medicalIcon);
+          
+          const shoppingIcon = getCategoryIcon('쇼핑');
+          console.log('쇼핑 테스트 결과:', shoppingIcon);
+          
+          const foodIcon = getCategoryIcon('식비');
+          console.log('식비 테스트 결과:', foodIcon);
+        } catch (error) {
+          console.error('getCategoryIcon 함수 테스트 중 에러:', error);
+        }
+        console.log('=== getCategoryIcon 함수 테스트 끝 ===');
       } else {
         console.log('CalendarScreen: 사용자가 속한 그룹 없음');
         setTransactions([]);
@@ -435,15 +423,14 @@ const CalendarScreen: React.FC = () => {
                       <Text style={styles.transactionMemo}>{item.memo}</Text>
                       <Text style={styles.transactionTime}>
                         {(() => {
-                          // UTC 시간을 한국 시간으로 변환
-                          const utcDate = new Date(item.date);
-                          const koreanTime = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
+                          // item.date는 이미 사용자가 선택한 로컬 시간으로 저장되어 있음
+                          const transactionDate = new Date(item.date);
                           
-                          console.log('CalendarScreen: 원본 UTC 시간:', item.date);
-                          console.log('CalendarScreen: 한국 시간 변환:', koreanTime);
-                          console.log('CalendarScreen: 한국 시간 - 시간:', koreanTime.getHours(), '분:', koreanTime.getMinutes());
+                          console.log('CalendarScreen: 거래 시간 원본:', item.date);
+                          console.log('CalendarScreen: 거래 시간 Date 객체:', transactionDate);
+                          console.log('CalendarScreen: 시간:', transactionDate.getHours(), '분:', transactionDate.getMinutes());
                           
-                          return koreanTime.toLocaleTimeString('ko-KR', { 
+                          return transactionDate.toLocaleTimeString('ko-KR', { 
                             hour: '2-digit', 
                             minute: '2-digit',
                             hour12: true 
