@@ -103,17 +103,21 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
           categoryId: selectedCategory,
           memo: memo.trim(),
           date: finalDateTime,
+          groupId: currentGroupId || '',
+          userId: getCurrentUser()?.uid || '',
         });
         Alert.alert('완료', '거래 내역이 수정되었습니다!');
       } else {
         // 새로 추가 모드
         await onSave({
           amount: parseInt(amount),
-      type,
-      categoryId: selectedCategory,
-      memo: memo.trim(),
+          type,
+          categoryId: selectedCategory,
+          memo: memo.trim(),
           date: finalDateTime,
-    });
+          groupId: currentGroupId || '',
+          userId: getCurrentUser()?.uid || '',
+        });
         Alert.alert('완료', '기록이 저장되었습니다!');
       }
     handleClose();
@@ -383,6 +387,16 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     keyboardShouldPersistTaps="handled"
+                    onScroll={(event) => {
+                      const offsetY = event.nativeEvent.contentOffset.y;
+                      const month = Math.round(offsetY / 40);
+                      if (month >= 0 && month < 12 && month !== selectedDate.getMonth()) {
+                        const newDate = new Date(selectedDate);
+                        newDate.setMonth(month);
+                        setSelectedDate(newDate);
+                      }
+                    }}
+                    scrollEventThrottle={100}
                     ref={(ref) => {
                       if (ref) {
                         // 선택된 월에 맞춰 스크롤 위치 조정
@@ -419,6 +433,16 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     keyboardShouldPersistTaps="handled"
+                    onScroll={(event) => {
+                      const offsetY = event.nativeEvent.contentOffset.y;
+                      const day = Math.round(offsetY / 40) + 1;
+                      if (day >= 1 && day <= 31 && day !== selectedDate.getDate()) {
+                        const newDate = new Date(selectedDate);
+                        newDate.setDate(day);
+                        setSelectedDate(newDate);
+                      }
+                    }}
+                    scrollEventThrottle={100}
                     ref={(ref) => {
                       if (ref) {
                         // 선택된 일에 맞춰 스크롤 위치 조정
@@ -463,10 +487,20 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                   {/* 시 선택 스크롤 */}
                   <ScrollView
                     style={styles.timeScrollContainer}
-                    contentContainerStyle={styles.timeScrollContent}
+                    contentContainerStyle={styles.dateScrollContent}
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     keyboardShouldPersistTaps="handled"
+                    onScroll={(event) => {
+                      const offsetY = event.nativeEvent.contentOffset.y;
+                      const hour = Math.round(offsetY / 40);
+                      if (hour >= 0 && hour < 24 && hour !== selectedDate.getHours()) {
+                        const newDate = new Date(selectedDate);
+                        newDate.setHours(hour);
+                        setSelectedDate(newDate);
+                      }
+                    }}
+                    scrollEventThrottle={100}
                     ref={(ref) => {
                       if (ref) {
                         // 선택된 시에 맞춰 스크롤 위치 조정
@@ -503,6 +537,16 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     keyboardShouldPersistTaps="handled"
+                    onScroll={(event) => {
+                      const offsetY = event.nativeEvent.contentOffset.y;
+                      const minute = Math.round(offsetY / 40);
+                      if (minute >= 0 && minute < 60 && minute !== selectedDate.getMinutes()) {
+                        const newDate = new Date(selectedDate);
+                        newDate.setMinutes(minute);
+                        setSelectedDate(newDate);
+                      }
+                    }}
+                    scrollEventThrottle={100}
                     ref={(ref) => {
                       if (ref) {
                         // 선택된 분에 맞춰 스크롤 위치 조정
@@ -544,57 +588,65 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
             </View>
           </View>
 
-          {/* 카테고리 선택 */}
+          {/* 카테고리 선택 - 수평 스크롤 */}
           <View style={[styles.section, styles.categorySection]}>
             <Text style={styles.sectionTitle}>카테고리</Text>
             
-            {/* 그룹별 카테고리 섹션 */}
-            {groupCategories.length > 0 && (
-              <>
-                <Text style={styles.categorySectionTitle}>📁 모임 카테고리</Text>
-                <View style={styles.categoryGrid}>
-                  {groupCategories.map((category, index) => (
-                    <TouchableOpacity
-                      key={`group-${category.id}`}
-                      style={[
-                        styles.categoryButton,
-                        selectedCategory === category.name && styles.categoryButtonActive,
-                      ]}
-                      onPress={() => setSelectedCategory(category.name)}
-                    >
-                      <Text style={styles.categoryIcon}>{category.icon || '📁'}</Text>
-                      <Text style={[
-                        styles.categoryText,
-                        selectedCategory === category.name && styles.categoryTextActive,
-                      ]}>
-                        {category.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </>
-            )}
-            
-            {/* 기본 카테고리 섹션 */}
-            <View style={styles.categoryGrid}>
-              {DEFAULT_CATEGORIES.map((category, index) => (
-                <TouchableOpacity
-                  key={`default-${index}`}
-                  style={[
-                    styles.categoryButton,
-                    selectedCategory === category.name && styles.categoryButtonActive,
-                  ]}
-                  onPress={() => setSelectedCategory(category.name)}
-                >
-                  <Text style={styles.categoryIcon}>{category.icon}</Text>
-                  <Text style={[
-                    styles.categoryText,
-                    selectedCategory === category.name && styles.categoryTextActive,
-                  ]}>
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            {/* 수평 스크롤 카테고리 목록 */}
+            <View style={styles.categoryScrollWrapper}>
+              {/* 왼쪽 화살표 기호 */}
+              <Text style={styles.scrollArrowText}>‹</Text>
+              
+              {/* 카테고리 스크롤 영역 */}
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryScrollContainer}
+                style={styles.categoryScrollView}
+              >
+                {/* 기본 카테고리 먼저 표시 */}
+                {DEFAULT_CATEGORIES.map((category, index) => (
+                  <TouchableOpacity
+                    key={`default-${index}`}
+                    style={[
+                      styles.horizontalCategoryButton,
+                      selectedCategory === category.name && styles.horizontalCategoryButtonActive,
+                    ]}
+                    onPress={() => setSelectedCategory(category.name)}
+                  >
+                    <Text style={styles.horizontalCategoryIcon}>{category.icon}</Text>
+                    <Text style={[
+                      styles.horizontalCategoryText,
+                      selectedCategory === category.name && styles.horizontalCategoryTextActive,
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                
+                {/* 모임 카테고리 뒤에 표시 */}
+                {groupCategories.map((category, index) => (
+                  <TouchableOpacity
+                    key={`group-${category.id}`}
+                    style={[
+                      styles.horizontalCategoryButton,
+                      selectedCategory === category.name && styles.horizontalCategoryButtonActive,
+                    ]}
+                    onPress={() => setSelectedCategory(category.name)}
+                  >
+                    <Text style={styles.horizontalCategoryIcon}>{category.icon || '📁'}</Text>
+                    <Text style={[
+                      styles.horizontalCategoryText,
+                      selectedCategory === category.name && styles.horizontalCategoryTextActive,
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              
+              {/* 오른쪽 화살표 기호 */}
+              <Text style={styles.scrollArrowText}>›</Text>
             </View>
           </View>
 
@@ -941,7 +993,7 @@ const styles = StyleSheet.create({
   },
   todayButtonText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.surface,
   },
   selectedDateDisplay: {
     marginTop: 12,
@@ -1000,7 +1052,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   timeScrollItemTextSelected: {
-    color: COLORS.white,
+    color: COLORS.surface,
     fontWeight: '600',
   },
   timeSeparator: {
@@ -1152,13 +1204,70 @@ const styles = StyleSheet.create({
   },
   noCategorySubText: {
     fontSize: 14,
-    color: COLORS.textTertiary,
+    color: COLORS.textLight,
   },
   dateTimeSection: {
     marginBottom: 20, // 날짜/시간 섹션과 카테고리 사이 여백 추가
   },
   categorySection: {
     marginBottom: 12, // 20에서 12로 줄여서 메모와의 간격 조정
+  },
+  // 수평 스크롤 카테고리 스타일
+  categoryScrollView: {
+    marginTop: 12,
+  },
+  categoryScrollContainer: {
+    paddingHorizontal: 8,
+    gap: 6,
+  },
+  horizontalCategoryButton: {
+    width: 110, // 한 번에 3개가 보이도록 너비 조정
+    height: 80,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  horizontalCategoryButtonActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 2,
+  },
+  horizontalCategoryIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  horizontalCategoryText: {
+    fontSize: 12,
+    color: COLORS.text,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  horizontalCategoryTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  // 스크롤 화살표 기호 스타일
+  categoryScrollWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  scrollArrowText: {
+    fontSize: 28,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginHorizontal: 4,
   },
 });
 
