@@ -10,17 +10,18 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '../constants';
+import { COLORS, DEFAULT_CATEGORIES } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
-import { Transaction } from '../types';
+import { Transaction, Category } from '../types';
 import { getCurrentUser } from '../services/authService';
-import { groupService, transactionService } from '../services/dataService';
+import { groupService, transactionService, categoryService } from '../services/dataService';
 import TransactionDetailModal from '../components/TransactionDetailModal';
 
 const CalendarScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
   // 거래 내역 수정/삭제 관련 상태
@@ -30,6 +31,10 @@ const CalendarScreen: React.FC = () => {
   // 컴포넌트 마운트/언마운트 로깅
   useEffect(() => {
     console.log('CalendarScreen: 컴포넌트 마운트됨');
+    console.log('CalendarScreen: DEFAULT_CATEGORIES 테스트:', DEFAULT_CATEGORIES);
+    console.log('CalendarScreen: DEFAULT_CATEGORIES 길이:', DEFAULT_CATEGORIES.length);
+    console.log('CalendarScreen: 의료비 카테고리 찾기 테스트:', DEFAULT_CATEGORIES.find(cat => cat.name === '의료비'));
+    
     return () => {
       console.log('CalendarScreen: 컴포넌트 언마운트됨');
     };
@@ -40,6 +45,70 @@ const CalendarScreen: React.FC = () => {
     console.log('CalendarScreen: useEffect 실행됨, currentDate:', currentDate);
     loadCalendarData();
   }, [currentDate]);
+
+  /**
+   * 카테고리 아이콘 가져오기
+   */
+  const getCategoryIcon = (categoryId: string): string => {
+    console.log('=== getCategoryIcon 디버깅 시작 ===');
+    console.log('CalendarScreen: getCategoryIcon 호출 - categoryId:', categoryId);
+    
+    // 하드코딩 테스트 - 의료비는 무조건 🏥 반환
+    if (categoryId === '의료비') {
+      console.log('CalendarScreen: 의료비 하드코딩 매칭 - 🏥 반환');
+      return '🏥';
+    }
+    
+    // 에덴이는 🎁 반환 (선물 아이콘)
+    if (categoryId === '에덴이') {
+      console.log('CalendarScreen: 에덴이 하드코딩 매칭 - 🎁 반환');
+      return '🎁';
+    }
+    
+    // 기본 카테고리에서 찾기
+    const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryId);
+    console.log('CalendarScreen: 기본 카테고리에서 찾은 결과:', defaultCategory);
+    
+    if (defaultCategory) {
+      console.log('CalendarScreen: 기본 카테고리 아이콘 반환:', defaultCategory.icon);
+      return defaultCategory.icon;
+    }
+    
+    console.log('CalendarScreen: 매칭되는 카테고리 없음, 기본 아이콘 반환: 💰');
+    console.log('=== getCategoryIcon 디버깅 끝 ===');
+    return '💰';
+  };
+
+  /**
+   * 카테고리 이름 가져오기
+   */
+  const getCategoryName = (categoryId: string): string => {
+    console.log('CalendarScreen: getCategoryName 호출 - categoryId:', categoryId);
+    
+    // 먼저 기본 카테고리에서 찾기 (가장 먼저 확인)
+    const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryId);
+    console.log('CalendarScreen: 기본 카테고리에서 찾은 이름:', defaultCategory?.name);
+    if (defaultCategory) {
+      return defaultCategory.name;
+    }
+    
+    // 그룹 카테고리에서 이름으로 찾기
+    const groupCategoryByName = categories.find(cat => cat.name === categoryId);
+    console.log('CalendarScreen: 이름으로 찾은 그룹 카테고리 이름:', groupCategoryByName?.name);
+    if (groupCategoryByName) {
+      return groupCategoryByName.name;
+    }
+    
+    // 그룹 카테고리에서 ID로 찾기
+    const groupCategory = categories.find(cat => cat.id === categoryId);
+    console.log('CalendarScreen: ID로 찾은 그룹 카테고리 이름:', groupCategory?.name);
+    if (groupCategory) {
+      return groupCategory.name;
+    }
+    
+    console.log('CalendarScreen: 매칭되는 카테고리 없음, 원본 값 반환:', categoryId);
+    return categoryId; // 찾을 수 없는 경우 원본 값 반환
+  };
 
   /**
    * 달력 데이터 로드
@@ -68,7 +137,16 @@ const CalendarScreen: React.FC = () => {
         const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
         console.log('CalendarScreen: 조회된 거래 내역:', monthTransactions);
         
+        // 카테고리 정보도 함께 로드
+        const groupCategories = await categoryService.getByGroup(groups[0].id);
+        console.log('CalendarScreen: 조회된 카테고리:', groupCategories);
+        console.log('CalendarScreen: 첫 번째 거래 내역:', monthTransactions[0]);
+        console.log('CalendarScreen: 첫 번째 거래의 categoryId:', monthTransactions[0]?.categoryId);
+        console.log('CalendarScreen: 첫 번째 거래의 date:', monthTransactions[0]?.date);
+        console.log('CalendarScreen: 첫 번째 거래의 createdAt:', monthTransactions[0]?.createdAt);
+        
         setTransactions(monthTransactions);
+        setCategories(groupCategories);
         console.log('CalendarScreen: transactions 상태 업데이트 완료, 개수:', monthTransactions.length);
       } else {
         console.log('CalendarScreen: 사용자가 속한 그룹 없음');
@@ -325,15 +403,42 @@ const CalendarScreen: React.FC = () => {
             <FlatList
               data={selectedDateTransactions}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity 
-                  style={styles.transactionItem}
-                  onPress={() => handleTransactionClick(item)}
-                >
-                  <View style={styles.transactionInfo}>
-                    <Text style={styles.transactionCategory}>{item.categoryId}</Text>
-                    <Text style={styles.transactionMemo}>{item.memo}</Text>
-                  </View>
+              renderItem={({ item }) => {
+                console.log('CalendarScreen: 거래 내역 렌더링 - item:', item);
+                console.log('CalendarScreen: 거래 내역의 categoryId:', item.categoryId);
+                console.log('CalendarScreen: 거래 내역의 date:', item.date);
+                console.log('CalendarScreen: 거래 내역의 date 시간 정보 - 시간:', item.date.getHours(), '분:', item.date.getMinutes());
+                console.log('CalendarScreen: 거래 내역의 date ISO 문자열:', item.date.toISOString());
+                
+                return (
+                  <TouchableOpacity 
+                    style={styles.transactionItem}
+                    onPress={() => handleTransactionClick(item)}
+                  >
+                    <View style={styles.transactionInfo}>
+                      <View style={styles.categoryContainer}>
+                        <Text style={styles.categoryIcon}>{getCategoryIcon(item.categoryId)}</Text>
+                        <Text style={styles.transactionCategory}>{getCategoryName(item.categoryId)}</Text>
+                      </View>
+                      <Text style={styles.transactionMemo}>{item.memo}</Text>
+                      <Text style={styles.transactionTime}>
+                        {(() => {
+                          // UTC 시간을 한국 시간으로 변환
+                          const utcDate = new Date(item.date);
+                          const koreanTime = new Date(utcDate.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
+                          
+                          console.log('CalendarScreen: 원본 UTC 시간:', item.date);
+                          console.log('CalendarScreen: 한국 시간 변환:', koreanTime);
+                          console.log('CalendarScreen: 한국 시간 - 시간:', koreanTime.getHours(), '분:', koreanTime.getMinutes());
+                          
+                          return koreanTime.toLocaleTimeString('ko-KR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          });
+                        })()}
+                      </Text>
+                    </View>
                   <View style={styles.transactionRight}>
                     <Text style={[
                       styles.transactionAmount,
@@ -511,6 +616,14 @@ const styles = StyleSheet.create({
   transactionInfo: {
     flex: 1,
   },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  categoryIcon: {
+    fontSize: 18,
+  },
   transactionCategory: {
     fontSize: 16,
     fontWeight: '600',
@@ -520,6 +633,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     marginTop: 2,
+  },
+  transactionTime: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginTop: 4,
   },
   transactionAmount: {
     fontSize: 16,

@@ -93,6 +93,9 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
     }
 
     const finalDateTime = new Date(selectedDate);
+    console.log('QuickAddModal: 저장 시 선택된 날짜/시간:', selectedDate);
+    console.log('QuickAddModal: 저장 시 finalDateTime:', finalDateTime);
+    console.log('QuickAddModal: 저장 시 시간 정보 - 시간:', finalDateTime.getHours(), '분:', finalDateTime.getMinutes());
     
     try {
       if (transactionToEdit) {
