@@ -1,4 +1,4 @@
-// 하단 탭 네비게이션
+// 하단 탭 네비게이션 - Dribbble 스타일 다크 테마
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet, Platform } from 'react-native';
@@ -11,13 +11,15 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
-// 모던한 아이콘 컴포넌트 - 배경색 없이 깔끔하게
+// Lucide 스타일 아이콘 컴포넌트 - 글래스모피즘 효과
 const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
   <View style={[styles.iconContainer, focused && styles.iconContainerFocused]}>
-    <Text style={[styles.iconText, { color: COLORS.primary }]}>
-      🏠
-    </Text>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <View style={[styles.iconBackground, focused && styles.iconBackgroundFocused]}>
+      <Text style={[styles.iconText, { color: focused ? COLORS.background : COLORS.text }]}>
+        ⌂
+      </Text>
+    </View>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
       홈
     </Text>
   </View>
@@ -25,10 +27,12 @@ const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
 
 const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
   <View style={[styles.iconContainer, focused && styles.iconContainerFocused]}>
-    <Text style={[styles.iconText, { color: COLORS.primary }]}>
-      👥
-    </Text>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <View style={[styles.iconBackground, focused && styles.iconBackgroundFocused]}>
+      <Text style={[styles.iconText, { color: focused ? COLORS.background : COLORS.text }]}>
+        ◉
+      </Text>
+    </View>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
       모임
     </Text>
   </View>
@@ -36,10 +40,12 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
 
 const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) => (
   <View style={[styles.iconContainer, focused && styles.iconContainerFocused]}>
-    <Text style={[styles.iconText, { color: COLORS.primary }]}>
-      ⚙️
-    </Text>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <View style={[styles.iconBackground, focused && styles.iconBackgroundFocused]}>
+      <Text style={[styles.iconText, { color: focused ? COLORS.background : COLORS.text }]}>
+        ⚙
+      </Text>
+    </View>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
       설정
     </Text>
   </View>
@@ -53,17 +59,19 @@ const TabNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
-          borderTopWidth: 0,
+          backgroundColor: COLORS.glass,
+          borderTopWidth: 1,
+          borderTopColor: COLORS.border,
           elevation: 0,
           shadowOpacity: 0,
-          paddingVertical: 8,
-          height: 60 + Math.max(insets.bottom, 10), // 적절한 크기로 조정
+          paddingVertical: 12,
+          height: 80 + Math.max(insets.bottom, 10),
           paddingBottom: Math.max(insets.bottom, 10),
+          backdropFilter: 'blur(20px)',
         },
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textSecondary,
-        tabBarShowLabel: false, // 기본 라벨 숨김 (커스텀 라벨 사용)
+        tabBarInactiveTintColor: COLORS.textLight,
+        tabBarShowLabel: false,
       }}
     >
       <Tab.Screen
@@ -103,27 +111,37 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginTop: 8, // 상단 여백 추가
+    paddingTop: 4,
   },
   iconContainerFocused: {
-    transform: [{ scale: 1.05 }], // 확대 효과 줄임
+    transform: [{ scale: 1.1 }],
+  },
+  iconBackground: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  iconBackgroundFocused: {
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   iconText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
   },
   iconLabel: {
     fontSize: 11,
     fontWeight: '600',
-    marginTop: 3,
     textAlign: 'center',
   },
 });
 
 export default TabNavigator;
-
-
-
