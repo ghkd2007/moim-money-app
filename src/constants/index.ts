@@ -2,10 +2,10 @@
 
 // 색상 상수 - 모던 다크 테마 (Dribbble 레퍼런스)
 export const COLORS = {
-	// 기본 보라 팔레트 (Dribbble 스타일)
-	primary: "#7C3AED",
-	primaryLight: "#A855F7",
-	primaryDark: "#5B21B6",
+		// 기본 보라 팔레트 (다크 배경 최적화)
+	primary: "#A855F7", // 더 밝은 보라색으로 가독성 향상
+	primaryLight: "#C084FC", 
+	primaryDark: "#7C3AED",
 
 	// 네온 그린 액센트
 	secondary: "#00FF88",
@@ -41,8 +41,8 @@ export const COLORS = {
 	glassStrong: "rgba(255,255,255,0.15)",
 
 	// 그래디언트 보조값
-	gradientStart: "#7C3AED",
-	gradientEnd: "#A855F7",
+	gradientStart: "#A855F7",
+	gradientEnd: "#C084FC",
 } as const;
 
 // 카테고리 아이콘 목록 - 기존 이모티콘 유지

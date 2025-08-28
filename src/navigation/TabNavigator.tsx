@@ -19,7 +19,11 @@ const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         ⌂
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <Text style={[
+      styles.iconLabel, 
+      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      focused && styles.iconLabelFocused
+    ]}>
       홈
     </Text>
   </View>
@@ -32,7 +36,11 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         👥
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <Text style={[
+      styles.iconLabel, 
+      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      focused && styles.iconLabelFocused
+    ]}>
       모임
     </Text>
   </View>
@@ -45,7 +53,11 @@ const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) =
         ⚙
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
+    <Text style={[
+      styles.iconLabel, 
+      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      focused && styles.iconLabelFocused
+    ]}>
       설정
     </Text>
   </View>
@@ -141,6 +153,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  iconLabelFocused: {
+    // 선택된 상태 글로우 효과
+    textShadowColor: COLORS.primary,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
   },
 });
 
