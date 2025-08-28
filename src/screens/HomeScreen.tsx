@@ -368,7 +368,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         </TouchableOpacity>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>●</Text>
+            <Text style={styles.notificationIcon}>🔔</Text>
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>2</Text>
             </View>
@@ -481,7 +481,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>+</Text>
+              <Text style={styles.statIcon}>↗</Text>
               <Text style={styles.statLabel}>이번 달 수입</Text>
             </View>
             <Text style={styles.statValue}>
@@ -492,7 +492,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>-</Text>
+              <Text style={styles.statIcon}>↘</Text>
               <Text style={styles.statLabel}>이번 달 지출</Text>
             </View>
             <Text style={styles.statValue}>
@@ -501,7 +501,6 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
             <Text style={styles.statChange}>-3.2% 지난달 대비</Text>
           </View>
         </View>
-
 
 
 
@@ -754,6 +753,7 @@ const styles = StyleSheet.create({
   statIcon: {
     fontSize: 16,
     marginRight: 8,
+    color: COLORS.text,
   },
   statLabel: {
     fontSize: 14,
