@@ -1,6 +1,7 @@
 // 공통 스타일 가이드 - Dribbble 스타일 다크 테마
 import { StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../constants';
+import { TextStyles } from '../constants/typography';
 
 export const CommonStyles = StyleSheet.create({
   // 기본 컨테이너
@@ -16,6 +17,9 @@ export const CommonStyles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     paddingHorizontal: 20,
     paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   
   // 모던 카드
@@ -62,9 +66,8 @@ export const CommonStyles = StyleSheet.create({
   },
   
   primaryButtonText: {
+    ...TextStyles.button,
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   
   // 세컨더리 버튼
@@ -80,18 +83,17 @@ export const CommonStyles = StyleSheet.create({
   },
   
   secondaryButtonText: {
+    ...TextStyles.button,
     color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '600',
   },
   
   // 입력 필드
   input: {
+    ...TextStyles.input,
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 16,
-    fontSize: 16,
     color: COLORS.text,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -103,32 +105,64 @@ export const CommonStyles = StyleSheet.create({
   },
   
   // 타이포그래피
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
+  h1: {
+    ...TextStyles.h1,
     color: COLORS.text,
-    letterSpacing: -0.5,
+  },
+  
+  h2: {
+    ...TextStyles.h2,
+    color: COLORS.text,
+  },
+  
+  h3: {
+    ...TextStyles.h3,
+    color: COLORS.text,
+  },
+  
+  h4: {
+    ...TextStyles.h4,
+    color: COLORS.text,
+  },
+  
+  title: {
+    ...TextStyles.h2,
+    color: COLORS.text,
   },
   
   subtitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...TextStyles.h4,
     color: COLORS.text,
-    letterSpacing: -0.3,
   },
   
   body: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...TextStyles.body,
     color: COLORS.text,
-    lineHeight: 24,
+  },
+  
+  bodyMedium: {
+    ...TextStyles.bodyMedium,
+    color: COLORS.text,
+  },
+  
+  bodySemibold: {
+    ...TextStyles.bodySemibold,
+    color: COLORS.text,
   },
   
   caption: {
-    fontSize: 14,
-    fontWeight: '500',
+    ...TextStyles.caption,
     color: COLORS.textSecondary,
-    lineHeight: 20,
+  },
+  
+  captionMedium: {
+    ...TextStyles.captionMedium,
+    color: COLORS.textSecondary,
+  },
+  
+  small: {
+    ...TextStyles.small,
+    color: COLORS.textLight,
   },
   
   // 모달 스타일
@@ -149,8 +183,7 @@ export const CommonStyles = StyleSheet.create({
   },
   
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    ...TextStyles.h4,
     color: COLORS.text,
   },
   
@@ -161,9 +194,8 @@ export const CommonStyles = StyleSheet.create({
   },
   
   modalCloseText: {
-    fontSize: 16,
+    ...TextStyles.button,
     color: COLORS.text,
-    fontWeight: '600',
   },
   
   // 네온 효과 (액센트용)
@@ -225,6 +257,28 @@ export const CommonStyles = StyleSheet.create({
   fabIcon: {
     fontSize: 24,
     color: COLORS.background,
+    fontWeight: '600',
+  },
+  
+  // 상태별 텍스트
+  successText: {
+    color: COLORS.success,
+    fontWeight: '600',
+  },
+  
+  warningText: {
+    color: COLORS.warning,
+    fontWeight: '600',
+  },
+  
+  dangerText: {
+    color: COLORS.danger,
+    fontWeight: '600',
+  },
+  
+  // 링크 텍스트
+  linkText: {
+    color: COLORS.primary,
     fontWeight: '600',
   },
 });
