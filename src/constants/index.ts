@@ -1,39 +1,48 @@
 // 앱 상수 정의
 
-// 색상 상수 - 머니투게더 디자인 시스템
+// 색상 상수 - 모던 다크 테마 (Dribbble 레퍼런스)
 export const COLORS = {
-	// 기본 색상 (코랄/피치 톤)
-	primary: "#FF9B7A", // 메인 코랄 색상
-	primaryLight: "#FFA588", // 연한 코랄
-	primaryDark: "#E8845F", // 진한 코랄
+	// 기본 보라 팔레트
+	primary: "#6366F1",
+	primaryLight: "#8B5CF6",
+	primaryDark: "#4F46E5",
 
-	// 보조 색상 (민트/터키석 톤)
-	secondary: "#5DBEA3", // 메인 민트
-	secondaryLight: "#4ECDC4", // 연한 민트
-	secondaryDark: "#4A9B85", // 진한 민트
+	// 네온 그린 액센트
+	secondary: "#00FF88",
+	secondaryLight: "#34D399",
+	secondaryDark: "#059669",
 
 	// 상태 색상
-	success: "#5DBEA3", // 민트 톤으로 통일
-	warning: "#FFB366", // 따뜻한 오렌지
-	danger: "#E85A5A", // 부드러운 레드
+	success: "#00FF88",
+	warning: "#F59E0B",
+	danger: "#EF4444",
 
 	// 수입/지출 색상
-	income: "#5DBEA3", // 민트 (수입)
-	expense: "#FF9B7A", // 코랄 (지출)
+	income: "#00FF88",
+	expense: "#EF4444",
 
-	// 배경 색상 (크림/베이지 톤)
-	background: "#FFF4F0", // 따뜻한 크림
-	surface: "#FFFFFF", // 순백
-	surfaceSecondary: "#FFEEE8", // 연한 피치
+	// 다크 배경/서피스
+	background: "#0F0F0F",
+	backgroundSecondary: "#1A1A1A",
+	surface: "#2A2A2A",
+	surfaceSecondary: "#3A3A3A",
 
-	// 텍스트 색상 (다크 브라운 톤)
-	text: "#6B4423", // 메인 다크 브라운
-	textSecondary: "#8B5A2B", // 보조 브라운
-	textLight: "#A67C52", // 연한 브라운
+	// 텍스트
+	text: "#FFFFFF",
+	textSecondary: "#A3A3A3",
+	textLight: "#6B7280",
 
-	// 테두리 색상
-	border: "#E8C4A0", // 베이지 톤 테두리
-	separator: "#F2D7C2", // 연한 베이지 구분선
+	// 테두리/구분선
+	border: "#374151",
+	separator: "#1F2937",
+
+	// 글래스 효과용(반투명)
+	glass: "rgba(255,255,255,0.08)",
+	glassStrong: "rgba(255,255,255,0.15)",
+
+	// 그래디언트 보조값
+	gradientStart: "#6366F1",
+	gradientEnd: "#8B5CF6",
 } as const;
 
 // 카테고리 아이콘 목록 - 대폭 확장 (윈도우 이모티콘 포함)

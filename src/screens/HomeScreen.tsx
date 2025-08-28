@@ -118,7 +118,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
       // 더미 데이터 제거 - 실제 데이터만 사용
       setCurrentGroup(null);
       setMonthlyTotal({ income: 0, expense: 0 });
-      setRecentTransactions([]);
+      setMonthlyTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -643,16 +643,16 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  // 기본 컨테이너
+  // 기본 컨테이너 - 다크 테마
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingText: {
     fontSize: 16,
@@ -660,24 +660,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // 상단 헤더
+  // 상단 헤더 (다크)
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.glass,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.border,
   },
   groupSwitcher: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
   },
   groupName: {
     fontSize: 16,
@@ -693,9 +693,12 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: 'relative',
     padding: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
   },
   notificationIcon: {
     fontSize: 16,
+    color: COLORS.text,
   },
   notificationBadge: {
     position: 'absolute',
@@ -825,7 +828,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -973,7 +976,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -997,11 +1000,12 @@ const styles = StyleSheet.create({
   },
   budgetInput: {
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
-    backgroundColor: 'white',
+    backgroundColor: COLORS.surface,
+    color: COLORS.text,
   },
   budgetEditButtons: {
     flexDirection: 'row',
@@ -1015,7 +1019,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelBudgetButton: {
-    backgroundColor: '#94A3B8',
+    backgroundColor: '#475569',
   },
   cancelBudgetButtonText: {
     color: 'white',
