@@ -368,7 +368,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         </TouchableOpacity>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
+            <Text style={styles.notificationIcon}>●</Text>
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>2</Text>
             </View>
@@ -481,7 +481,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>💰</Text>
+              <Text style={styles.statIcon}>+</Text>
               <Text style={styles.statLabel}>이번 달 수입</Text>
             </View>
             <Text style={styles.statValue}>
@@ -492,7 +492,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>💸</Text>
+              <Text style={styles.statIcon}>-</Text>
               <Text style={styles.statLabel}>이번 달 지출</Text>
             </View>
             <Text style={styles.statValue}>
@@ -589,7 +589,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
         {/* 기록하기 버튼 */}
         {/* <TouchableOpacity style={styles.quickAddButton} onPress={handleQuickAdd}>
-          <Text style={styles.quickAddIcon}>✏️</Text>
+          <Text style={styles.quickAddIcon}>+</Text>
           <Text style={styles.quickAddText}>기록하기</Text>
         </TouchableOpacity> */}
 
@@ -635,7 +635,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
       {/* 플로팅 기록하기 버튼 */}
       <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
-        <Text style={styles.floatingButtonIcon}>✏️</Text>
+        <Text style={styles.floatingButtonIcon}>+</Text>
       </TouchableOpacity>
 
     </SafeAreaView>
