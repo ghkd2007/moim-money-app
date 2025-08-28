@@ -19,7 +19,7 @@ const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         ⌂
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
       홈
     </Text>
   </View>
@@ -32,7 +32,7 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         👥
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
       모임
     </Text>
   </View>
@@ -45,7 +45,7 @@ const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) =
         ⚙
       </Text>
     </View>
-    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textLight }]}>
+    <Text style={[styles.iconLabel, { color: focused ? COLORS.primary : COLORS.textSecondary }]}>
       설정
     </Text>
   </View>
@@ -70,7 +70,7 @@ const TabNavigator: React.FC = () => {
           backdropFilter: 'blur(20px)',
         },
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textLight,
+        tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarShowLabel: false,
       }}
     >

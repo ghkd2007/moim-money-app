@@ -841,20 +841,20 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#FF9800', // 오렌지 색상
+    backgroundColor: COLORS.secondary, // 네온 그린으로 변경
   },
   otherMonthDay: {
     backgroundColor: 'transparent',
   },
   todayMiniCell: {
-    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
-    borderWidth: 3,
-    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    backgroundColor: COLORS.primary, // 보라색 배경
+    borderWidth: 2,
+    borderColor: COLORS.primaryLight, // 연한 보라 테두리
     elevation: 4,
-    shadowColor: '#FF9800',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
   },
   miniDayNumber: {
     fontSize: 12,
@@ -866,8 +866,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   todayMiniNumber: {
-    color: '#E65100', // 진한 오렌지로 대비 강화
-    fontWeight: '800', // 더 굵게
+    color: '#FFFFFF', // 보라 배경에 화이트 텍스트로 대비 강화
+    fontWeight: '800',
   },
   miniTransactionDot: {
     position: 'absolute',
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: COLORS.border,
   },
   budgetTitle: {
     fontSize: 18,
@@ -1085,7 +1085,7 @@ const styles = StyleSheet.create({
   },
   budgetProgressBar: {
     height: 8,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.backgroundSecondary,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -1096,11 +1096,11 @@ const styles = StyleSheet.create({
 
   // 거래 내역이 있는 날짜 스타일
   hasTransactionDay: {
-    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
-    borderWidth: 3,
-    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    backgroundColor: COLORS.glassStrong, // 글래스 효과 배경
+    borderWidth: 2,
+    borderColor: COLORS.secondary, // 네온 그린 테두리
     elevation: 4,
-    shadowColor: '#FF9800',
+    shadowColor: COLORS.secondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1111,8 +1111,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     left: '50%',
-    transform: [{ translateX: -12 }], // 중앙 정렬을 위해 절반 크기로 조정
-    backgroundColor: '#FF9800', // 오렌지 색상
+    transform: [{ translateX: -12 }],
+    backgroundColor: COLORS.secondary, // 네온 그린 색상
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -1126,10 +1126,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   incomeAmount: {
-    color: '#10B981', // 초록색
+    color: COLORS.success, // 네온 그린
   },
   expenseAmount: {
-    color: '#DC2626', // 빨간색
+    color: COLORS.danger, // 테마 레드
   },
 
   // 플로팅 기록하기 버튼 - 자연스러운 네온 효과

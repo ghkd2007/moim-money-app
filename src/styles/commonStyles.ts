@@ -162,7 +162,7 @@ export const CommonStyles = StyleSheet.create({
 
 	small: {
 		...TextStyles.small,
-		color: COLORS.textLight,
+		color: COLORS.textSecondary,
 	},
 
 	// 모달 스타일

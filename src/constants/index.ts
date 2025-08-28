@@ -27,10 +27,10 @@ export const COLORS = {
 	surface: "#2A2A2A",
 	surfaceSecondary: "#3A3A3A",
 
-	// 텍스트
-	text: "#FFFFFF",
-	textSecondary: "#A3A3A3",
-	textLight: "#6B7280",
+	// 텍스트 (가독성 개선)
+	text: "#F8FAFC", // 순백보다 부드러운 화이트
+	textSecondary: "#CBD5E1", // 더 밝은 그레이
+	textLight: "#94A3B8", // 중간 톤 그레이
 
 	// 테두리/구분선
 	border: "#374151",
