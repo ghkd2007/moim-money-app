@@ -137,6 +137,45 @@ const GroupScreen: React.FC = () => {
           </View>
         </View>
 
+        {/* 멤버 리스트 */}
+        <View style={styles.memberSection}>
+          <Text style={styles.sectionTitle}>모임 멤버</Text>
+          <View style={CommonStyles.card}>
+            <View style={styles.memberItem}>
+              <View style={styles.memberAvatar}>
+                <Text style={styles.memberAvatarText}>👤</Text>
+              </View>
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>나 (모임장)</Text>
+                <Text style={styles.memberRole}>관리자</Text>
+              </View>
+              <View style={styles.memberStatus}>
+                <Text style={styles.statusDot}>●</Text>
+              </View>
+            </View>
+            
+            {currentGroup?.members && currentGroup.members.length > 1 && 
+              currentGroup.members.slice(1).map((member, index) => (
+                <View key={index}>
+                  <View style={styles.separator} />
+                  <View style={styles.memberItem}>
+                    <View style={styles.memberAvatar}>
+                      <Text style={styles.memberAvatarText}>👤</Text>
+                    </View>
+                    <View style={styles.memberInfo}>
+                      <Text style={styles.memberName}>{member.displayName || '멤버'}</Text>
+                      <Text style={styles.memberRole}>일반 멤버</Text>
+                    </View>
+                    <View style={styles.memberStatus}>
+                      <Text style={styles.statusDot}>●</Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            }
+          </View>
+        </View>
+
         {/* 관리 메뉴 */}
         <View style={styles.menuSection}>
           <Text style={styles.sectionTitle}>모임 관리</Text>
@@ -296,6 +335,62 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 14,
     opacity: 0.8,
+  },
+  
+  memberSection: {
+    marginTop: Spacing.xl,
+  },
+  
+  memberItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  
+  memberAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.backgroundSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  
+  memberAvatarText: {
+    fontSize: 20,
+    color: COLORS.text,
+  },
+  
+  memberInfo: {
+    flex: 1,
+  },
+  
+  memberName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  
+  memberRole: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  
+  memberStatus: {
+    alignItems: 'center',
+  },
+  
+  statusDot: {
+    fontSize: 12,
+    color: COLORS.success,
+  },
+  
+  separator: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: Spacing.sm,
   },
   
   menuSection: {

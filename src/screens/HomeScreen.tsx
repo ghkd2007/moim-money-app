@@ -368,7 +368,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         </TouchableOpacity>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
+            <Text style={styles.notificationIcon}>○</Text>
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>2</Text>
             </View>
@@ -597,7 +597,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           style={styles.smsButton} 
           onPress={() => setShowSMSModal(true)}
         >
-          <Text style={styles.smsButtonIcon}>📱</Text>
+          <Text style={styles.smsButtonIcon}>📲</Text>
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
@@ -906,32 +906,33 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
   },
 
-  // SMS 자동 지출 추가 버튼
+  // SMS 자동 지출 추가 버튼 - 다크 테마
   smsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 20,
     marginBottom: 12,
-    paddingVertical: 14,
-    backgroundColor: '#FEF3C7', // 연한 노란색 배경
+    paddingVertical: 16,
+    backgroundColor: COLORS.surface,
     borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#F59E0B', // 진한 노란색 테두리
+    borderWidth: 1,
+    borderColor: COLORS.border,
     elevation: 2,
-    shadowColor: '#F59E0B',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   smsButtonIcon: {
     fontSize: 18,
     marginRight: 10,
+    color: COLORS.text,
   },
   smsButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#92400E', // 진한 노란색 텍스트
+    color: COLORS.text,
   },
 
   // 하단 여백
@@ -1131,26 +1132,30 @@ const styles = StyleSheet.create({
     color: '#DC2626', // 빨간색
   },
 
-  // 플로팅 기록하기 버튼
+  // 플로팅 기록하기 버튼 - 자연스러운 네온 효과
   floatingButton: {
     position: 'absolute',
-    bottom: 80, // 탭 바 높이만큼 위로 이동
+    bottom: 90,
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primary,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    elevation: 8,
+    shadowColor: COLORS.secondary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    // 네온 글로우 효과
+    borderWidth: 2,
+    borderColor: 'rgba(0, 255, 136, 0.3)',
   },
   floatingButtonIcon: {
-    fontSize: 28,
-    color: 'white',
+    fontSize: 24,
+    color: COLORS.background,
+    fontWeight: '700',
   },
 });
 
