@@ -798,12 +798,12 @@ const styles = StyleSheet.create({
   },
   calendarMonth: {
     fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
-    // 글로우 효과 추가
-    textShadowColor: COLORS.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
+    fontWeight: '700', // 폰트 굵기 증가
+    color: COLORS.primaryLight, // 더 밝은 보라색
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // 약간의 배경
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   weekHeader: {
     flexDirection: 'row',
@@ -977,18 +977,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface, // 다크 테마에 맞는 배경색
     justifyContent: 'center',
     alignItems: 'center',
   },
   monthButtonText: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: '600',
-    // 글로우 효과로 가독성 향상
-    textShadowColor: COLORS.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 4,
+    fontSize: 16, // 크기 증가
+    color: COLORS.primaryLight, // 더 밝은 보라색
+    fontWeight: '700', // 굵기 증가
   },
   currentMonthText: {
     fontSize: 16,
@@ -1054,13 +1050,13 @@ const styles = StyleSheet.create({
   budgetAmount: {
     fontSize: 24,
     fontWeight: '700',
-    color: COLORS.primary,
+    color: COLORS.primaryLight, // 더 밝은 보라색 사용
     flex: 1,
     textAlign: 'center',
-    // 글로우 효과로 가독성 향상
-    textShadowColor: COLORS.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
+    // 약간의 배경색으로 대비 강화
+    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   editBudgetButton: {
     paddingHorizontal: 16,

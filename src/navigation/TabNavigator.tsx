@@ -21,7 +21,7 @@ const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
     </View>
     <Text style={[
       styles.iconLabel, 
-      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
       focused && styles.iconLabelFocused
     ]}>
       홈
@@ -38,7 +38,7 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
     </View>
     <Text style={[
       styles.iconLabel, 
-      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
       focused && styles.iconLabelFocused
     ]}>
       모임
@@ -55,7 +55,7 @@ const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) =
     </View>
     <Text style={[
       styles.iconLabel, 
-      { color: focused ? COLORS.primary : COLORS.textSecondary },
+      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
       focused && styles.iconLabelFocused
     ]}>
       설정
@@ -155,10 +155,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   iconLabelFocused: {
-    // 선택된 상태 글로우 효과
-    textShadowColor: COLORS.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
+    // 선택된 상태 배경 효과
+    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
 });
 
