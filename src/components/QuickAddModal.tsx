@@ -248,7 +248,7 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                 onPress={() => setType('expense')}
               >
                 <Text style={[styles.typeText, type === 'expense' && styles.typeTextActive]}>
-                  💸 지출
+                  ↘ 지출
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -256,7 +256,7 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({ visible, onClose, onSave,
                 onPress={() => setType('income')}
               >
                 <Text style={[styles.typeText, type === 'income' && styles.typeTextActive]}>
-                  💰 수입
+                  ↗ 수입
                 </Text>
               </TouchableOpacity>
             </View>
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   closeButton: {
     padding: 8,
@@ -736,7 +736,7 @@ const styles = StyleSheet.create({
   },
   typeToggle: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: 4,
   },
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 2,
@@ -864,7 +864,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -895,7 +895,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     height: 100,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 20,
@@ -940,7 +940,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   dateTimeModalTitle: {
     fontSize: 18,
@@ -969,7 +969,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
       shadowRadius: 2,
@@ -1031,10 +1031,10 @@ const styles = StyleSheet.create({
   timeScrollContainer: {
     width: 65, // 날짜와 정확히 동일하게 맞춤
     height: 120, // 원래 높이로 복원 (3개 항목이 보이도록)
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
     overflow: 'hidden',
   },
   timeScrollContent: {
@@ -1121,10 +1121,10 @@ const styles = StyleSheet.create({
   dateScrollContainer: {
     width: 65, // 시간과 정확히 동일하게 맞춤
     height: 120, // 원래 높이로 복원 (3개 항목이 보이도록)
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
     overflow: 'hidden',
   },
   dateScrollContent: {
@@ -1172,7 +1172,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web' ? {
       boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     } : {
-      shadowColor: '#000',
+      shadowColor: COLORS.background,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -1186,7 +1186,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   modalTitle: {
     fontSize: 18,
@@ -1239,10 +1239,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
     paddingHorizontal: 8,
     paddingVertical: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -1250,7 +1250,7 @@ const styles = StyleSheet.create({
   },
   horizontalCategoryButtonActive: {
     borderColor: COLORS.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(168, 85, 247, 0.2)',
     borderWidth: 2,
   },
   horizontalCategoryIcon: {
