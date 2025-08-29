@@ -414,7 +414,7 @@ const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   headerTitle: {
     fontSize: 24,
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   defaultBadge: {
     fontSize: 12,
     color: COLORS.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -520,28 +520,28 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   editButton: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#0EA5E9',
+    borderColor: COLORS.primary,
   },
   editButtonText: {
-    color: '#0EA5E9',
+    color: COLORS.primary,
     fontSize: 12,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#EF4444',
+    borderColor: COLORS.danger,
   },
   deleteButtonText: {
-    color: '#EF4444',
+    color: COLORS.danger,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
   },
   iconPicker: {
     marginBottom: 24,
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   },
   // 강제 4x4 그리드 스타일
   forcedIconGrid: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
     borderRadius: 12,
     marginBottom: 20,
     alignSelf: 'center',
@@ -586,8 +586,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: COLORS.surface,
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   },
   forcedIconButtonSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
     borderWidth: 2,
   },
   forcedIconText: {
@@ -618,14 +618,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
   },
   forcedPageButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: COLORS.surface,
   },
   forcedPageButtonText: {
     fontSize: 18,
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   saveButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: COLORS.surface,
   },
   saveButtonText: {
     color: 'white',
