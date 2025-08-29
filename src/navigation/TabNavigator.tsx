@@ -153,14 +153,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+    minWidth: 40, // 최소 너비 설정으로 텍스트가 한 줄로 유지되도록
   },
   iconLabelFocused: {
     // 선택된 상태 배경 효과
     backgroundColor: 'rgba(168, 85, 247, 0.2)',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10, // 여유 공간 확보
     paddingVertical: 2,
     borderRadius: 8,
     overflow: 'hidden',
+    minWidth: 40, // 최소 너비 보장
   },
 });
 
