@@ -309,7 +309,7 @@ const GroupScreen: React.FC = () => {
             </Text>
             <View style={styles.memberInfoContainer}>
               <View style={styles.memberCountBadge}>
-                <Text style={styles.memberCountIcon}>👥</Text>
+                <Text style={styles.memberCountIcon}>⛇</Text>
                 <Text style={styles.memberCountText}>
                   {memberStats.length}명
                 </Text>
@@ -335,7 +335,7 @@ const GroupScreen: React.FC = () => {
           style={styles.categoryButton} 
           onPress={() => setShowCategoryModal(true)}
         >
-          <Text style={styles.categoryButtonIcon}>🏷️</Text>
+          <Text style={styles.categoryButtonIcon}>🏷</Text>
           <View style={styles.categoryButtonContent}>
             <Text style={styles.categoryButtonTitle}>카테고리 관리</Text>
             <Text style={styles.categoryButtonSubtitle}>
@@ -349,7 +349,7 @@ const GroupScreen: React.FC = () => {
       {/* 초대 기능 (하단) */}
       <View style={styles.inviteSection}>
         <TouchableOpacity style={styles.inviteButton} onPress={handleShareInviteCode}>
-          <Text style={styles.inviteButtonIcon}>👥</Text>
+          <Text style={styles.inviteButtonIcon}>+</Text>
           <View style={styles.inviteButtonContent}>
             <Text style={styles.inviteButtonTitle}>새 멤버 초대하기</Text>
             <Text style={styles.inviteButtonSubtitle}>
@@ -383,7 +383,7 @@ const GroupScreen: React.FC = () => {
                   onPress={() => handleGroupChange(group)}
                 >
                   <View style={styles.groupCardHeader}>
-                    <Text style={styles.groupCardIcon}>👥</Text>
+                    <Text style={styles.groupCardIcon}>⛇</Text>
                     <Text style={styles.groupCardName}>{group.name}</Text>
                   </View>
                   <Text style={styles.groupCardMembers}>
@@ -398,7 +398,7 @@ const GroupScreen: React.FC = () => {
           </ScrollView>
         ) : (
           <View style={styles.singleGroupMessage}>
-            <Text style={styles.singleGroupIcon}>🏠</Text>
+            <Text style={styles.singleGroupIcon}>⌂</Text>
             <Text style={styles.singleGroupText}>
               현재 참여 중인 모임이 1개입니다.
             </Text>
@@ -432,7 +432,7 @@ const GroupScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   scrollView: {
     flex: 1,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingText: {
     marginTop: 16,
@@ -475,14 +475,14 @@ const styles = StyleSheet.create({
   memberCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    backgroundColor: 'rgba(168, 85, 247, 0.15)', // 보라색 배경
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#FF9800', // 진한 오렌지 테두리
+    borderColor: COLORS.primary, // 보라색 테두리
     elevation: 2,
-    shadowColor: '#FF9800',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   },
   memberCountText: {
     fontSize: 16,
-    color: '#E65100', // 진한 오렌지로 대비 강화
+    color: COLORS.primary, // 보라색으로 대비 강화
     fontWeight: '700', // 더 굵게
   },
 
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   ownerBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   ownerBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#D97706',
+    color: COLORS.warning,
   },
   memberEmail: {
     fontSize: 14,
@@ -600,10 +600,10 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   incomeText: {
-    color: '#10B981',
+    color: COLORS.income,
   },
   expenseText: {
-    color: '#EF4444',
+    color: COLORS.expense,
   },
   lastTransaction: {
     fontSize: 12,
@@ -621,12 +621,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 2,
-    borderColor: '#F59E0B',
+    borderColor: COLORS.secondary,
   },
   categoryButtonIcon: {
     fontSize: 24,
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -688,22 +688,22 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   inviteCodeCard: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(168, 85, 247, 0.1)',
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#C7D2FE',
+    borderColor: COLORS.primaryLight,
   },
   inviteCodeLabel: {
     fontSize: 14,
-    color: '#6366F1',
+    color: COLORS.primary,
     fontWeight: '600',
     marginBottom: 4,
   },
   inviteCodeText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#4338CA',
+    color: COLORS.primaryDark,
     letterSpacing: 2,
   },
   groupSwitchSection: {
@@ -726,12 +726,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
     width: 200,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
   },
   groupCardHeader: {
     flexDirection: 'row',
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
     borderStyle: 'dashed',
   },
   singleGroupIcon: {

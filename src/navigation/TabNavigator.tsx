@@ -33,7 +33,7 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
   <View style={[styles.iconContainer, focused && styles.iconContainerFocused]}>
     <View style={[styles.iconBackground, focused && styles.iconBackgroundFocused]}>
       <Text style={[styles.iconText, { color: focused ? COLORS.background : COLORS.text }]}>
-        👥
+        ⚇
       </Text>
     </View>
     <Text style={[
