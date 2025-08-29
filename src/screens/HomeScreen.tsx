@@ -343,9 +343,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   // 예산 진행률 색상 가져오기
   const getBudgetProgressColor = (spent: number, budget: number) => {
     const ratio = spent / budget;
-    if (ratio >= 1) return '#DC2626'; // 빨간색 (초과)
-    if (ratio >= 0.8) return '#F59E0B'; // 주황색 (경고)
-    return '#10B981'; // 초록색 (정상)
+    if (ratio >= 1) return COLORS.danger; // 빨간색 (초과)
+    if (ratio >= 0.8) return COLORS.warning; // 주황색 (경고)
+    return COLORS.success; // 초록색 (정상)
   };
 
   if (loading) {
@@ -646,13 +646,13 @@ const styles = StyleSheet.create({
   // 기본 컨테이너
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingText: {
     fontSize: 16,
@@ -669,14 +669,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   groupSwitcher: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
   },
   groupName: {
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 16,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -829,7 +829,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -842,20 +842,20 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#FF9800', // 오렌지 색상
+    backgroundColor: COLORS.secondary, // 네온 그린
   },
   otherMonthDay: {
     backgroundColor: 'transparent',
   },
   todayMiniCell: {
-    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
-    borderWidth: 3,
-    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    backgroundColor: COLORS.primary, // 보라색 배경
+    borderWidth: 2,
+    borderColor: COLORS.primaryLight, // 연한 보라 테두리
     elevation: 4,
-    shadowColor: '#FF9800',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
   },
   miniDayNumber: {
     fontSize: 12,
@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   todayMiniNumber: {
-    color: '#E65100', // 진한 오렌지로 대비 강화
+    color: COLORS.text, // 보라 배경에 화이트 텍스트로 대비 강화
     fontWeight: '800', // 더 굵게
   },
   miniTransactionDot: {
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#10B981', // 더 밝은 초록색
     borderWidth: 1,
-    borderColor: '#FFFFFF', // 흰색 테두리로 대비 강화
+    borderColor: COLORS.text, // 흰색 테두리로 대비 강화
   },
 
   // 기록하기 버튼
@@ -915,12 +915,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
     paddingVertical: 14,
-    backgroundColor: '#FEF3C7', // 연한 노란색 배경
+    backgroundColor: COLORS.surface, // 다크 테마 배경
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#F59E0B', // 진한 노란색 테두리
+    borderColor: COLORS.secondary, // 네온 그린 테두리
     elevation: 2,
-    shadowColor: '#F59E0B',
+    shadowColor: COLORS.secondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
   smsButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#92400E', // 진한 노란색 텍스트
+    color: COLORS.text, // 다크 테마 텍스트
   },
 
   // 하단 여백
@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: COLORS.surface,
   },
   budgetTitle: {
     fontSize: 18,
@@ -1001,7 +1001,7 @@ const styles = StyleSheet.create({
   },
   budgetInput: {
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
@@ -1088,7 +1088,7 @@ const styles = StyleSheet.create({
   },
   budgetProgressBar: {
     height: 8,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -1099,11 +1099,11 @@ const styles = StyleSheet.create({
 
   // 거래 내역이 있는 날짜 스타일
   hasTransactionDay: {
-    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
-    borderWidth: 3,
-    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
+    backgroundColor: COLORS.surface, // 다크 테마 배경
+    borderWidth: 2,
+    borderColor: COLORS.secondary, // 네온 그린 테두리
     elevation: 4,
-    shadowColor: '#FF9800',
+    shadowColor: COLORS.secondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1115,7 +1115,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: '50%',
     transform: [{ translateX: -12 }], // 중앙 정렬을 위해 절반 크기로 조정
-    backgroundColor: '#FF9800', // 오렌지 색상
+    backgroundColor: COLORS.secondary, // 네온 그린
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -1129,10 +1129,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   incomeAmount: {
-    color: '#10B981', // 초록색
+    color: COLORS.income, // 수입 색상
   },
   expenseAmount: {
-    color: '#DC2626', // 빨간색
+    color: COLORS.expense, // 지출 색상
   },
 
   // 플로팅 기록하기 버튼
