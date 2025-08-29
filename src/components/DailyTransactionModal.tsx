@@ -8,7 +8,7 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
-import { COLORS } from '../constants';
+import { COLORS, DEFAULT_CATEGORIES } from '../constants';
 import { formatCurrency } from '../utils';
 import { Transaction } from '../types';
 
@@ -61,7 +61,8 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
           transaction.type === 'income' ? styles.incomeIndicator : styles.expenseIndicator,
         ]}>
           <Text style={styles.typeIcon}>
-            {transaction.type === 'income' ? '💰' : '💸'}
+            {DEFAULT_CATEGORIES.find(cat => cat.name === transaction.category)?.icon || 
+             (transaction.type === 'income' ? '↗' : '↘')}
           </Text>
         </View>
         
@@ -173,7 +174,7 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
             </View>
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>📝</Text>
+              <Text style={styles.emptyIcon}>📋</Text>
               <Text style={styles.emptyTitle}>거래 내역이 없습니다</Text>
               <Text style={styles.emptySubtitle}>
                 이 날에는 아직 거래 내역이 없어요
@@ -195,7 +196,7 @@ const DailyTransactionModal: React.FC<DailyTransactionModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.surface,
   },
   headerContent: {
     flex: 1,
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -263,14 +264,14 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     width: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: COLORS.surface,
     marginHorizontal: 16,
   },
   incomeAmount: {
-    color: '#10B981',
+    color: COLORS.income,
   },
   expenseAmount: {
-    color: '#EF4444',
+    color: COLORS.expense,
   },
   transactionsList: {
     flex: 1,
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     elevation: 1,
-    shadowColor: '#000',
+    shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -310,10 +311,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   incomeIndicator: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   expenseIndicator: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   typeIcon: {
     fontSize: 18,
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 14,
-    color: '#3B82F6',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   deleteButton: {
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 14,
-    color: '#EF4444',
+    color: COLORS.expense,
     fontWeight: '600',
   },
   emptyState: {
