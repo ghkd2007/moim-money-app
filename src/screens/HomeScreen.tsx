@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SCREEN } from '../constants';
@@ -17,6 +18,7 @@ import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
+import SMSTestComponent from '../components/SMSTestComponent';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
@@ -40,6 +42,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
+  const [showSMSTestModal, setShowSMSTestModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -602,6 +605,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
+        {/* SMS 권한 테스트 버튼 (개발용) */}
+        {__DEV__ && (
+          <TouchableOpacity 
+            style={[styles.smsButton, styles.testButton]} 
+            onPress={() => setShowSMSTestModal(true)}
+          >
+            <Text style={styles.smsButtonIcon}>🧪</Text>
+            <Text style={styles.smsButtonText}>SMS 권한 테스트</Text>
+          </TouchableOpacity>
+        )}
+
 
 
         {/* 하단 여백 */}
@@ -632,6 +646,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onClose={() => setShowSMSModal(false)}
         onExpenseAdd={handleSMSExpenseAdd}
       />
+
+      {/* SMS 테스트 모달 (개발용) */}
+      {showSMSTestModal && (
+        <Modal
+          visible={showSMSTestModal}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          <SMSTestComponent onClose={() => setShowSMSTestModal(false)} />
+        </Modal>
+      )}
 
       {/* 플로팅 기록하기 버튼 */}
       <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
@@ -933,6 +958,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text, // 다크 테마 텍스트
+  },
+  testButton: {
+    borderColor: COLORS.warning, // 테스트 버튼은 노란색 테두리
+    backgroundColor: 'rgba(245, 158, 11, 0.1)', // 노란색 투명 배경
   },
 
   // 하단 여백

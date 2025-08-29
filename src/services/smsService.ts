@@ -1,5 +1,11 @@
 import * as Notifications from "expo-notifications";
 import { Alert, Platform } from "react-native";
+import { 
+  checkRealSMSPermission, 
+  requestRealSMSPermission, 
+  readRealSMSMessages,
+  SMSTestUtils 
+} from './realSMSService';
 
 export interface SMSMessage {
 	id: string;
@@ -599,19 +605,33 @@ export interface SMSReader {
  */
 class RealSMSReader implements SMSReader {
 	async readMessages(): Promise<SMSMessage[]> {
-		// TODO: 실제 SMS 읽기 구현
-		// react-native-sms-retriever 또는 다른 네이티브 모듈 사용
-		throw new Error(
-			"실제 SMS 읽기 기능이 구현되지 않았습니다. 네이티브 모듈을 설치해주세요."
-		);
+		try {
+			console.log("RealSMSReader: 실제 SMS 읽기 시작");
+			const realMessages = await readRealSMSMessages();
+			
+			// RealSMSMessage를 SMSMessage 형식으로 변환
+			const convertedMessages: SMSMessage[] = realMessages.map(msg => ({
+				id: msg.id,
+				address: msg.address,
+				body: msg.body,
+				date: msg.date,
+				type: msg.type,
+			}));
+			
+			console.log(`RealSMSReader: ${convertedMessages.length}개 SMS 메시지 변환 완료`);
+			return convertedMessages;
+		} catch (error) {
+			console.error("RealSMSReader: SMS 읽기 실패:", error);
+			throw error;
+		}
 	}
 
 	async hasPermission(): Promise<boolean> {
-		return await checkSMSPermission();
+		return await checkRealSMSPermission();
 	}
 
 	async requestPermission(): Promise<boolean> {
-		return await requestSMSPermission();
+		return await requestRealSMSPermission();
 	}
 }
 
@@ -675,9 +695,9 @@ class MockSMSReader implements SMSReader {
 const SMS_CONFIG = {
 	// 개발 환경에서는 MockSMSReader 사용
 	// 배포 환경에서는 RealSMSReader 사용
-	USE_MOCK_SMS: __DEV__, // 개발 모드일 때만 true
+	USE_MOCK_SMS: false, // 실제 SMS 테스트를 위해 false로 변경
 	// 실제 SMS 기능을 테스트하려면 아래를 true로 설정
-	FORCE_REAL_SMS: false,
+	FORCE_REAL_SMS: true, // 실제 SMS 강제 사용
 };
 
 /**
@@ -719,6 +739,7 @@ export const SMSConfigManager = {
 // 개발 환경에서만 전역 객체에 노출 (디버깅용)
 if (__DEV__) {
 	(global as any).SMSConfigManager = SMSConfigManager;
+	(global as any).SMSTestUtils = SMSTestUtils; // 실제 SMS 테스트 도구
 	(global as any).SMSDebugTools = {
 		// 중복 방지 테스트용 함수들
 		testDuplicatePrevention: () => {

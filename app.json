@@ -21,7 +21,11 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.moimmoneyapp"
+      "package": "com.anonymous.moimmoneyapp",
+      "permissions": [
+        "READ_SMS",
+        "RECEIVE_SMS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
