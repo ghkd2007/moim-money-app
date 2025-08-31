@@ -1,7 +1,7 @@
 {
   "name": "moim-money-app",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "App.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -29,7 +29,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
     "react-native-fs": "^2.20.0",
-    "react-native-gesture-handler": "^2.28.0",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "^0.20.0",
