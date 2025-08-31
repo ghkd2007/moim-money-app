@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "moim-money-app",
+    "name": "모임머니",
     "slug": "moim-money-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.moimmoneyapp",
+      "package": "com.moimoney.app",
+      "versionCode": 1,
       "permissions": [
         "READ_SMS",
         "RECEIVE_SMS"
