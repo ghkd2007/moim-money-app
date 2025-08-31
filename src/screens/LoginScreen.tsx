@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { COLORS } from '../constants';
 import { login, register } from '../services/authService';
@@ -84,9 +85,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         {/* 로고 섹션 */}
         <View style={styles.logoSection}>
           <View style={styles.logoContainer}>
-            <View style={styles.logoIcon}>
-              <Text style={styles.logoIconText}>모</Text>
-            </View>
+            <Image 
+              source={require('../../assets/icon.png')} 
+              style={styles.logoIcon}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.appName}>모임머니</Text>
           <Text style={styles.subtitle}>모임과 함께하는 스마트 가계부</Text>
@@ -216,14 +219,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
   },
   logoIconText: {
     fontSize: 36,

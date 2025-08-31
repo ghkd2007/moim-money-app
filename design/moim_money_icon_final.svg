@@ -1,0 +1,61 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 메인 배경 그라데이션 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00FF88;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 글로우 효과 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 드롭 섀도우 -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- 메인 배경 -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  
+  <!-- 사람 1 (왼쪽 - 매우 심플) -->
+  <g transform="translate(140, 200)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="90" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <!-- 매우 심플한 사람 모양 -->
+    <circle cx="0" cy="-20" r="30" fill="white"/>
+    <circle cx="0" cy="25" r="45" fill="white"/>
+  </g>
+  
+  <!-- 사람 2 (오른쪽) -->
+  <g transform="translate(372, 200)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="90" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <!-- 매우 심플한 사람 모양 -->
+    <circle cx="0" cy="-20" r="30" fill="white"/>
+    <circle cx="0" cy="25" r="45" fill="white"/>
+  </g>
+  
+  <!-- 중앙 큰 동전 (가장 중요한 요소) -->
+  <g transform="translate(256, 350)" filter="url(#shadow)">
+    <!-- 외부 링 -->
+    <circle cx="0" cy="0" r="85" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)" stroke-width="4"/>
+    <!-- 메인 동전 -->
+    <circle cx="0" cy="0" r="65" fill="white" stroke="rgba(255,255,255,0.8)" stroke-width="3"/>
+    
+    <!-- 매우 큰 원화 심볼 -->
+    <text x="0" y="20" font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+          font-size="60" font-weight="900" text-anchor="middle" fill="#A855F7" filter="url(#glow)">₩</text>
+  </g>
+  
+  <!-- 연결 표시 (하트 대신 간단한 선) -->
+  <path d="M 230 200 Q 256 150 282 200" stroke="rgba(255,255,255,0.8)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  
+  <!-- 돈의 흐름을 나타내는 화살표 -->
+  <path d="M 200 290 Q 228 320 256 280" stroke="rgba(255,255,255,0.6)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 312 290 Q 284 320 256 280" stroke="rgba(255,255,255,0.6)" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

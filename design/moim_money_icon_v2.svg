@@ -1,0 +1,67 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 메인 그라데이션: 앱 컬러 기반 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00FF88;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 중앙 원형 그라데이션 -->
+    <radialGradient id="centerGrad" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.25);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- 글로우 효과 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 메인 배경 -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  
+  <!-- 중앙 심볼 영역 -->
+  <circle cx="256" cy="256" r="140" fill="url(#centerGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  
+  <!-- 화폐 심볼들 (작고 우아하게) -->
+  <!-- 원화 심볼 ₩ -->
+  <text x="200" y="200" font-family="SF Pro Display, system-ui, sans-serif" 
+        font-size="24" font-weight="600" 
+        text-anchor="middle" fill="rgba(255,255,255,0.6)">₩</text>
+  
+  <!-- 달러 심볼 $ -->
+  <text x="320" y="180" font-family="SF Pro Display, system-ui, sans-serif" 
+        font-size="20" font-weight="600" 
+        text-anchor="middle" fill="rgba(0,255,136,0.7)">$</text>
+  
+  <!-- 유로 심볼 € -->
+  <text x="180" y="320" font-family="SF Pro Display, system-ui, sans-serif" 
+        font-size="18" font-weight="600" 
+        text-anchor="middle" fill="rgba(168,85,247,0.6)">€</text>
+  
+  <!-- 메인 텍스트 "모" -->
+  <text x="256" y="280" font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+        font-size="120" font-weight="900" 
+        text-anchor="middle" fill="white" 
+        filter="url(#glow)">모</text>
+  
+  <!-- 연결선들 (네트워크/모임을 상징) -->
+  <line x1="200" y1="200" x2="256" y2="256" stroke="rgba(255,255,255,0.3)" stroke-width="2" opacity="0.6"/>
+  <line x1="320" y1="180" x2="256" y2="256" stroke="rgba(0,255,136,0.4)" stroke-width="2" opacity="0.5"/>
+  <line x1="180" y1="320" x2="256" y2="256" stroke="rgba(168,85,247,0.4)" stroke-width="2" opacity="0.5"/>
+  
+  <!-- 모임을 나타내는 작은 점들 -->
+  <circle cx="256" cy="150" r="4" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="300" cy="200" r="3" fill="rgba(0,255,136,0.7)"/>
+  <circle cx="220" cy="300" r="3" fill="rgba(168,85,247,0.7)"/>
+  <circle cx="320" cy="280" r="2" fill="rgba(255,255,255,0.6)"/>
+  
+  <!-- 상단 하이라이트 -->
+  <ellipse cx="256" cy="150" rx="80" ry="20" fill="rgba(255,255,255,0.15)" opacity="0.7"/>
+</svg>

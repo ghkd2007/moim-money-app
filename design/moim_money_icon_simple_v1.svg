@@ -1,0 +1,77 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 메인 배경 그라데이션 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00FF88;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 사람 그라데이션 -->
+    <linearGradient id="personGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.95);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.85);stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 그림자 필터 -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
+    
+    <!-- 글로우 효과 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 메인 배경 -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  
+  <!-- 사람 1 (왼쪽) -->
+  <g transform="translate(180, 200)" filter="url(#shadow)">
+    <!-- 배경 원 -->
+    <circle cx="0" cy="0" r="80" fill="url(#personGrad)" stroke="rgba(168,85,247,0.3)" stroke-width="3"/>
+    <!-- 머리 -->
+    <circle cx="0" cy="-25" r="25" fill="#A855F7"/>
+    <!-- 몸 -->
+    <ellipse cx="0" cy="20" rx="35" ry="45" fill="#A855F7"/>
+  </g>
+  
+  <!-- 사람 2 (오른쪽) -->
+  <g transform="translate(332, 200)" filter="url(#shadow)">
+    <!-- 배경 원 -->
+    <circle cx="0" cy="0" r="80" fill="url(#personGrad)" stroke="rgba(0,255,136,0.3)" stroke-width="3"/>
+    <!-- 머리 -->
+    <circle cx="0" cy="-25" r="25" fill="#00FF88"/>
+    <!-- 몸 -->
+    <ellipse cx="0" cy="20" rx="35" ry="45" fill="#00FF88"/>
+  </g>
+  
+  <!-- 중앙 돈 아이콘 (크게) -->
+  <g transform="translate(256, 350)" filter="url(#shadow)">
+    <!-- 배경 원 -->
+    <circle cx="0" cy="0" r="70" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="3"/>
+    
+    <!-- 큰 동전 -->
+    <circle cx="0" cy="0" r="45" fill="#00FF88" stroke="rgba(255,255,255,0.7)" stroke-width="4" filter="url(#glow)"/>
+    
+    <!-- 원화 심볼 -->
+    <text x="0" y="12" font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+          font-size="36" font-weight="900" text-anchor="middle" fill="white">₩</text>
+  </g>
+  
+  <!-- 연결 하트 (사람들 사이) -->
+  <g transform="translate(256, 160)">
+    <path d="M 0,-10 C -20,-30 -50,-30 -50,-10 C -50,0 -25,20 0,35 C 25,20 50,0 50,-10 C 50,-30 20,-30 0,-10 Z" 
+          fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,0.5)" stroke-width="2" filter="url(#glow)"/>
+  </g>
+  
+  <!-- 작은 장식 동전들 -->
+  <circle cx="120" cy="120" r="15" fill="rgba(255,255,255,0.8)" opacity="0.7"/>
+  <circle cx="392" cy="130" r="12" fill="#A855F7" opacity="0.6"/>
+  <circle cx="100" cy="400" r="18" fill="#00FF88" opacity="0.5"/>
+  <circle cx="410" cy="380" r="14" fill="rgba(255,255,255,0.7)" opacity="0.6"/>
+</svg>

@@ -909,12 +909,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 20,
-    marginBottom: 12,
+    marginBottom: 20,
     paddingVertical: 14,
     backgroundColor: '#FEF3C7', // 연한 노란색 배경
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#F59E0B', // 진한 노란색 테두리
+    borderColor: '#F59E0B', // 진한 노간색 테두리
     elevation: 2,
     shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 2 },
@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
 
   // 하단 여백
   bottomSpacing: {
-    height: 20, // 탭 바 공간만큼만 확보
+    height: 120, // 플로팅 버튼 공간까지 확보
   },
 
 
@@ -1130,23 +1130,25 @@ const styles = StyleSheet.create({
   // 플로팅 기록하기 버튼
   floatingButton: {
     position: 'absolute',
-    bottom: 80, // 탭 바 높이만큼 위로 이동
+    bottom: 100, // 탭 바 높이만큼 위로 이동
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 10,
+    zIndex: 1000,
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
   floatingButtonIcon: {
-    fontSize: 28,
+    fontSize: 32,
     color: 'white',
+    fontWeight: 'bold',
   },
 });
 

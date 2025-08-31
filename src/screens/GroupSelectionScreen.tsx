@@ -8,6 +8,7 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { COLORS } from '../constants';
 import { groupService } from '../services/dataService';
@@ -138,9 +139,11 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <View style={styles.logoIcon}>
-            <Text style={styles.logoIconText}>모</Text>
-          </View>
+          <Image 
+            source={require('../../assets/icon.png')} 
+            style={styles.logoIcon}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.title}>모임머니</Text>
         <Text style={styles.subtitle}>모임을 생성하거나 참여해보세요</Text>
@@ -283,14 +286,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
   },
   logoIconText: {
     fontSize: 28,

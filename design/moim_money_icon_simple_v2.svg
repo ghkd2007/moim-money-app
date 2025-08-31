@@ -1,0 +1,67 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 메인 배경 그라데이션 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F0F0F;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00FF88;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 글래스 효과 -->
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.25);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 네온 글로우 -->
+    <filter id="neonGlow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 메인 배경 -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  
+  <!-- 사람 1 (왼쪽 - 더 모던한 스타일) -->
+  <g transform="translate(160, 256)">
+    <!-- 둥근 사각형 배경 -->
+    <rect x="-50" y="-70" width="100" height="140" rx="50" fill="url(#glassGrad)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <!-- 심플한 사람 실루엣 -->
+    <circle cx="0" cy="-30" r="20" fill="#A855F7" filter="url(#neonGlow)"/>
+    <rect x="-25" y="-10" width="50" height="60" rx="25" fill="#A855F7" filter="url(#neonGlow)"/>
+  </g>
+  
+  <!-- 사람 2 (오른쪽) -->
+  <g transform="translate(352, 256)">
+    <!-- 둥근 사각형 배경 -->
+    <rect x="-50" y="-70" width="100" height="140" rx="50" fill="url(#glassGrad)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <!-- 심플한 사람 실루엣 -->
+    <circle cx="0" cy="-30" r="20" fill="#00FF88" filter="url(#neonGlow)"/>
+    <rect x="-25" y="-10" width="50" height="60" rx="25" fill="#00FF88" filter="url(#neonGlow)"/>
+  </g>
+  
+  <!-- 중앙 큰 동전 -->
+  <g transform="translate(256, 256)">
+    <!-- 동전 배경 -->
+    <circle cx="0" cy="0" r="60" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="4"/>
+    <circle cx="0" cy="0" r="50" fill="#00FF88" stroke="rgba(255,255,255,0.8)" stroke-width="3" filter="url(#neonGlow)"/>
+    
+    <!-- 원화 심볼 (더 크게) -->
+    <text x="0" y="15" font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+          font-size="48" font-weight="900" text-anchor="middle" fill="white" filter="url(#neonGlow)">₩</text>
+  </g>
+  
+  <!-- 연결선 (데이터 플로우) -->
+  <line x1="210" y1="256" x2="196" y2="256" stroke="#00FF88" stroke-width="4" opacity="0.8" filter="url(#neonGlow)"/>
+  <line x1="302" y1="256" x2="316" y2="256" stroke="#00FF88" stroke-width="4" opacity="0.8" filter="url(#neonGlow)"/>
+  
+  <!-- 플로팅 파티클들 -->
+  <circle cx="256" cy="150" r="4" fill="#00FF88" opacity="0.8" filter="url(#neonGlow)"/>
+  <circle cx="200" cy="180" r="3" fill="#A855F7" opacity="0.7" filter="url(#neonGlow)"/>
+  <circle cx="320" cy="180" r="3" fill="rgba(255,255,255,0.9)" opacity="0.8" filter="url(#neonGlow)"/>
+  <circle cx="256" cy="360" r="5" fill="rgba(255,255,255,0.8)" opacity="0.6" filter="url(#neonGlow)"/>
+</svg>
