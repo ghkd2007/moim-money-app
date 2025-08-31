@@ -92,12 +92,10 @@ Start now and experience transparent and smart shared expense tracking!
 가계부, 공유가계부, 모임비, 정산, 가족가계부, 여행경비, 지출관리, 공동경비, 룸메이트, 동아리회비
 
 ## 개인정보처리방침 URL
-[개인정보처리방침 URL] (GitHub Pages, Notion 등을 활용하여 호스팅)
-(예: https://username.github.io/moim-money-privacy-policy)
+https://hwangi.notion.site/260dbaef3252801d800dd8496675a5a6?pvs=73
 
 ## 지원 이메일
-[개발자 이메일 주소] (실제 이메일로 교체 필요)
-(예: 기존 Gmail 계정 또는 새로운 앱 전용 계정)
+ghkd2007@gmail.com
 
 ## 웹사이트 URL (선택사항)
 [웹사이트 URL] (없으면 비워두거나 GitHub 저장소 링크 사용)

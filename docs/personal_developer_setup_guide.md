@@ -30,7 +30,7 @@
 1. GitHub 저장소 생성: `moim-money-privacy-policy`
 2. `index.html` 파일에 개인정보처리방침 내용 작성
 3. GitHub Pages 활성화
-4. URL: `https://username.github.io/moim-money-privacy-policy`
+4. URL: `https://hwangi.notion.site/260dbaef3252801d800dd8496675a5a6?pvs=73`
 
 **설정 방법**:
 ```bash
