@@ -9,7 +9,6 @@ import {
   Share,
   ActivityIndicator,
 } from 'react-native';
-import { Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency } from '../utils';
@@ -427,7 +426,7 @@ const GroupScreen: React.FC = () => {
             >
               <View style={styles.addGroupCardContent}>
                 <View style={styles.addGroupIconContainer}>
-                  <Plus size={32} color={COLORS.primary} />
+                  <Text style={styles.addGroupIcon}>+</Text>
                 </View>
                 <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
                 <Text style={styles.addGroupCardSubtitle}>
@@ -445,7 +444,7 @@ const GroupScreen: React.FC = () => {
             >
               <View style={styles.addGroupCardContent}>
                 <View style={styles.addGroupIconContainer}>
-                  <Plus size={32} color={COLORS.primary} />
+                  <Text style={styles.addGroupIcon}>+</Text>
                 </View>
                 <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
                 <Text style={styles.addGroupCardSubtitle}>
@@ -768,6 +767,8 @@ const styles = StyleSheet.create({
   },
   groupCardsContainer: {
     flexDirection: 'row',
+    paddingLeft: 4,
+    minHeight: 150,
   },
   groupSwitchCard: {
     backgroundColor: COLORS.surface,
@@ -775,13 +776,14 @@ const styles = StyleSheet.create({
     padding: 16,
     marginRight: 12,
     width: 200,
+    height: 140,
     elevation: 2,
     shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: COLORS.surface,
+    borderColor: COLORS.border,
   },
   groupCardHeader: {
     flexDirection: 'row',
@@ -822,24 +824,23 @@ const styles = StyleSheet.create({
   addGroupCard: {
     backgroundColor: COLORS.surface,
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
     marginRight: 12,
     width: 200,
+    height: 140,
     elevation: 2,
     shadowColor: COLORS.background,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 2,
-    borderColor: COLORS.primary,
-    borderStyle: 'dashed',
+    borderColor: COLORS.primary + '60',
   },
 
   addGroupCardContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
-    minHeight: 120,
+    flex: 1,
   },
 
   addGroupIconContainer: {
@@ -850,6 +851,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+  },
+
+  addGroupIcon: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: COLORS.primary,
   },
 
   addGroupCardTitle: {
