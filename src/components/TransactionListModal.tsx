@@ -31,14 +31,43 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
 }) => {
   const [searchText, setSearchText] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // 디버깅용 로그
+  React.useEffect(() => {
+    if (visible) {
+      console.log('TransactionListModal: 모달 열림, 거래내역:', transactions.length, '개');
+      console.log('TransactionListModal: 거래내역 샘플:', transactions.slice(0, 2));
+    }
+  }, [visible, transactions]);
+
+  // 필터링 결과 디버깅
+  React.useEffect(() => {
+    if (visible) {
+      console.log('TransactionListModal: 필터링 결과:', filteredTransactions.length, '개');
+      console.log('TransactionListModal: 검색어:', searchText, '필터타입:', filterType, '카테고리:', selectedCategory);
+    }
+  }, [visible, filteredTransactions, searchText, filterType, selectedCategory]);
+
+  // 고유한 카테고리 목록 추출
+  const uniqueCategories = React.useMemo(() => {
+    const categories = transactions
+      .map(t => t.categoryId)
+      .filter((category, index, self) => category && self.indexOf(category) === index)
+      .sort();
+    return ['all', ...categories];
+  }, [transactions]);
 
   // 거래 내역 필터링
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description?.toLowerCase().includes(searchText.toLowerCase()) ||
-                         transaction.category?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesSearch = searchText === '' || 
+                         transaction.description?.toLowerCase().includes(searchText.toLowerCase()) ||
+                         transaction.categoryId?.toLowerCase().includes(searchText.toLowerCase()) ||
+                         transaction.memo?.toLowerCase().includes(searchText.toLowerCase());
     const matchesType = filterType === 'all' || transaction.type === filterType;
+    const matchesCategory = selectedCategory === 'all' || transaction.categoryId === selectedCategory;
     
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesCategory;
   });
 
   // 수입/지출 합계 계산
@@ -70,10 +99,10 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
         </View>
         <View style={styles.transactionInfo}>
           <Text style={styles.transactionDescription}>
-            {transaction.description || transaction.category}
+            {transaction.description || transaction.memo || transaction.categoryId}
           </Text>
           <Text style={styles.transactionCategory}>
-            {transaction.category}
+            {transaction.categoryId}
           </Text>
           <Text style={styles.transactionDate}>
             {formatDate(new Date(transaction.date))}
@@ -148,6 +177,34 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* 카테고리 필터 */}
+          <View style={styles.categoryFilterContainer}>
+            <Text style={styles.filterSectionTitle}>카테고리</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoryFilterScroll}
+            >
+              {uniqueCategories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryFilterButton,
+                    selectedCategory === category && styles.activeCategoryFilter
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <Text style={[
+                    styles.categoryFilterText,
+                    selectedCategory === category && styles.activeCategoryFilterText
+                  ]}>
+                    {category === 'all' ? '전체' : category}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
           {/* 합계 정보 */}
           <View style={styles.summaryContainer}>
             <View style={styles.summaryItem}>
@@ -160,15 +217,6 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
               <Text style={styles.summaryLabel}>지출</Text>
               <Text style={[styles.summaryValue, { color: COLORS.danger }]}>
                 -{formatCurrency(totalExpense)}
-              </Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>순액</Text>
-              <Text style={[
-                styles.summaryValue,
-                { color: (totalIncome - totalExpense) >= 0 ? COLORS.success : COLORS.danger }
-              ]}>
-                {formatCurrency(totalIncome - totalExpense)}
               </Text>
             </View>
           </View>
@@ -290,12 +338,55 @@ const styles = StyleSheet.create({
     color: COLORS.background,
   },
 
+  categoryFilterContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+
+  filterSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+
+  categoryFilterScroll: {
+    marginBottom: 8,
+  },
+
+  categoryFilterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginRight: 8,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+
+  activeCategoryFilter: {
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.secondary,
+  },
+
+  categoryFilterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+
+  activeCategoryFilterText: {
+    color: COLORS.background,
+  },
+
   summaryContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
-    gap: 12,
+    gap: 16,
   },
 
   summaryItem: {

@@ -74,8 +74,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
       // 사용자가 속한 그룹 목록 조회 (첫 번째 그룹 사용)
       const groups = await groupService.getByUser(user.uid);
+      console.log('HomeScreen: 사용자 그룹 수:', groups.length);
       if (groups.length > 0) {
         const group = groups[0];
+        console.log('HomeScreen: 선택된 그룹:', group.id, group.name);
         setCurrentGroup(group);
 
 
@@ -85,6 +87,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1;
         
+        console.log('HomeScreen: 거래내역 조회 파라미터 - 그룹ID:', group.id, '년:', currentYear, '월:', currentMonth);
         const monthlyTransactions = await transactionService.getByMonth(
           group.id, 
           currentYear, 
@@ -92,6 +95,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         );
 
         // monthlyTransactions 상태 설정
+        console.log('HomeScreen: 월별 거래내역 로드됨:', monthlyTransactions.length, '개');
         setMonthlyTransactions(monthlyTransactions);
 
         const income = monthlyTransactions
@@ -102,6 +106,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           .filter(t => t.type === 'expense')
           .reduce((sum, t) => sum + t.amount, 0);
 
+        console.log('HomeScreen: 수입:', income, '지출:', expense);
         setMonthlyTotal({ income, expense });
 
         // 예산 데이터 로드
@@ -626,7 +631,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                       </View>
                       <View style={styles.transactionInfo}>
                         <Text style={styles.transactionDescription}>
-                          {transaction.description || transaction.category}
+                          {transaction.description || transaction.memo || transaction.categoryId}
                         </Text>
                         <Text style={styles.transactionDate}>
                           {formatDate(new Date(transaction.date))}
@@ -647,6 +652,10 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
               <Calendar size={32} color={COLORS.textSecondary} />
               <Text style={styles.emptyTransactionsText}>아직 거래내역이 없습니다</Text>
               <Text style={styles.emptyTransactionsSubtext}>플로팅 버튼을 눌러 첫 거래를 추가해보세요</Text>
+              {/* 디버깅 정보 */}
+              <Text style={styles.debugText}>
+                그룹: {currentGroup?.name || '없음'} | 데이터: {monthlyTransactions.length}개
+              </Text>
             </View>
           )}
         </View>
@@ -1107,6 +1116,13 @@ const styles = StyleSheet.create({
   emptyTransactionsSubtext: {
     fontSize: 14,
     color: COLORS.textLight,
+    textAlign: 'center',
+  },
+
+  debugText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 8,
     textAlign: 'center',
   },
 
