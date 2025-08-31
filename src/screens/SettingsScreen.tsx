@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
@@ -15,6 +16,7 @@ import { logout, getCurrentUser } from '../services/authService';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import ExcelExportModal from '../components/ExcelExportModal';
 import { useGlobalContext } from '../contexts/GlobalContext';
+import { Download, Shield, Info, Key, LogOut, ChevronRight } from 'lucide-react-native';
 
 interface SettingItem {
   id: string;
@@ -25,6 +27,7 @@ interface SettingItem {
   onPress?: () => void;
   onValueChange?: (value: boolean) => void;
   destructive?: boolean;
+  icon?: React.ReactNode;
 }
 
 const SettingsScreen: React.FC = () => {
@@ -65,6 +68,18 @@ const SettingsScreen: React.FC = () => {
     }
   };
 
+  // 개인정보처리방침 열기
+  const handlePrivacyPolicy = () => {
+    const privacyPolicyURL = 'https://hwangi.notion.site/260dbaef3252801d800dd8496675a5a6?pvs=73';
+    Linking.openURL(privacyPolicyURL).catch((err) => {
+      Alert.alert(
+        '오류',
+        '개인정보처리방침을 열 수 없습니다.',
+        [{ text: '확인', style: 'default' }]
+      );
+    });
+  };
+
   const settingsSections: { title: string; items: SettingItem[] }[] = [
     {
       title: '데이터',
@@ -74,6 +89,7 @@ const SettingsScreen: React.FC = () => {
           title: '엑셀 내보내기',
           subtitle: '거래내역을 엑셀 파일로 내보내기',
           type: 'navigation',
+          icon: <Download size={20} color={COLORS.textSecondary} />,
           onPress: () => setShowExcelExportModal(true),
         },
       ],
@@ -82,10 +98,19 @@ const SettingsScreen: React.FC = () => {
       title: '정보',
       items: [
         {
+          id: 'privacy_policy',
+          title: '개인정보처리방침',
+          subtitle: '개인정보 수집 및 이용에 대한 안내',
+          type: 'navigation',
+          icon: <Shield size={20} color={COLORS.textSecondary} />,
+          onPress: handlePrivacyPolicy,
+        },
+        {
           id: 'version',
           title: '앱 버전',
           subtitle: '1.0.0',
           type: 'navigation',
+          icon: <Info size={20} color={COLORS.textSecondary} />,
           onPress: () => {},
         },
       ],
@@ -98,6 +123,7 @@ const SettingsScreen: React.FC = () => {
           title: '비밀번호 변경',
           subtitle: '현재 비밀번호를 변경합니다',
           type: 'navigation',
+          icon: <Key size={20} color={COLORS.textSecondary} />,
           onPress: () => setShowChangePasswordModal(true),
         },
         {
@@ -105,6 +131,7 @@ const SettingsScreen: React.FC = () => {
           title: '로그아웃',
           type: 'action',
           destructive: true,
+          icon: <LogOut size={20} color={COLORS.danger} />,
           onPress: () => {
             Alert.alert(
               '로그아웃',
@@ -129,6 +156,11 @@ const SettingsScreen: React.FC = () => {
         activeOpacity={0.7}
       >
         <View style={styles.settingItemContent}>
+          {item.icon && (
+            <View style={styles.settingItemIcon}>
+              {item.icon}
+            </View>
+          )}
           <View style={styles.settingItemText}>
             <Text style={[
               styles.settingItemTitle,
@@ -143,7 +175,7 @@ const SettingsScreen: React.FC = () => {
           
           <View style={styles.settingItemAction}>
             {item.type === 'navigation' && !item.destructive && (
-              <Text style={styles.chevron}>→</Text>
+              <ChevronRight size={16} color={COLORS.textSecondary} />
             )}
           </View>
         </View>
@@ -266,6 +298,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  
+  settingItemIcon: {
+    marginRight: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   
   settingItemText: {
