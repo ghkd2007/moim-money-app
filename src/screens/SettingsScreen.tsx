@@ -14,7 +14,7 @@ import { CommonStyles, Spacing, BorderRadius } from '../styles/commonStyles';
 import { logout, getCurrentUser } from '../services/authService';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import ExcelExportModal from '../components/ExcelExportModal';
-import { useGlobalContext } from '../../App';
+import { useGlobalContext } from '../contexts/GlobalContext';
 
 interface SettingItem {
   id: string;

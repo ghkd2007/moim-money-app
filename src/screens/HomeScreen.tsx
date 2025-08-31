@@ -17,10 +17,11 @@ import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
+import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown } from 'lucide-react-native';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
-import { useGlobalContext } from '../../App';
+import { useGlobalContext } from '../contexts/GlobalContext';
 
 const { width } = Dimensions.get('window');
 
@@ -368,7 +369,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         </TouchableOpacity>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
+            <Bell size={20} color={COLORS.text} />
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>2</Text>
             </View>
@@ -481,7 +482,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>💰</Text>
+              <TrendingUp size={24} color={COLORS.success} />
               <Text style={styles.statLabel}>이번 달 수입</Text>
             </View>
             <Text style={styles.statValue}>
@@ -492,7 +493,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>💸</Text>
+              <TrendingDown size={24} color={COLORS.danger} />
               <Text style={styles.statLabel}>이번 달 지출</Text>
             </View>
             <Text style={styles.statValue}>
@@ -598,7 +599,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           style={styles.smsButton} 
           onPress={() => setShowSMSModal(true)}
         >
-          <Text style={styles.smsButtonIcon}>📱</Text>
+          <Smartphone size={20} color="#92400E" style={styles.smsButtonIcon} />
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
@@ -635,7 +636,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
       {/* 플로팅 기록하기 버튼 */}
       <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
-        <Text style={styles.floatingButtonIcon}>✏️</Text>
+        <Edit3 size={28} color="white" />
       </TouchableOpacity>
 
     </SafeAreaView>
@@ -670,6 +671,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
+    minHeight: 60,
   },
   groupSwitcher: {
     flexDirection: 'row',
@@ -694,9 +696,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     padding: 8,
   },
-  notificationIcon: {
-    fontSize: 16,
-  },
+
   notificationBadge: {
     position: 'absolute',
     top: 4,
@@ -729,18 +729,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 8,
-    gap: 12,
+    paddingBottom: 12,
+    gap: 16,
   },
   statCard: {
     flex: 1,
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    elevation: 2,
+    borderRadius: 20,
+    padding: 24,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
     shadowRadius: 12,
   },
   statHeader: {
@@ -748,14 +748,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  statIcon: {
-    fontSize: 16,
-    marginRight: 8,
-  },
+
   statLabel: {
     fontSize: 14,
     color: COLORS.textSecondary,
     fontWeight: '500',
+    marginLeft: 8,
   },
   statValue: {
     fontSize: 24,
@@ -774,16 +772,16 @@ const styles = StyleSheet.create({
   // 미니 달력 카드
   calendarCard: {
     marginHorizontal: 20,
-    marginTop: 20, // 상단 여백 줄임
-    marginBottom: 16, // 하단 여백 줄임
-    padding: 16, // 내부 패딩 줄임
+    marginTop: 20,
+    marginBottom: 16,
+    padding: 20,
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    elevation: 2,
+    borderRadius: 20,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
   },
   calendarHeader: {
     flexDirection: 'row',
@@ -922,7 +920,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   smsButtonIcon: {
-    fontSize: 18,
     marginRight: 10,
   },
   smsButtonText: {
@@ -941,21 +938,22 @@ const styles = StyleSheet.create({
   // 예산 카드 스타일
   budgetCard: {
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
+    borderRadius: 20,
     marginHorizontal: 20,
     marginTop: 20,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
   },
   budgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
@@ -1145,11 +1143,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
   },
-  floatingButtonIcon: {
-    fontSize: 32,
-    color: 'white',
-    fontWeight: 'bold',
-  },
+
 });
 
 export default HomeScreen;

@@ -16,7 +16,7 @@ import { getCurrentUser } from '../services/authService';
 import { groupService, userService, transactionService } from '../services/dataService';
 import { Group, User, Transaction } from '../types';
 import CategoryManagementModal from '../components/CategoryManagementModal';
-import { useGlobalContext } from '../../App';
+import { useGlobalContext } from '../contexts/GlobalContext';
 
 interface MemberStats extends User {
   isOwner: boolean;

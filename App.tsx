@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,21 +10,7 @@ import GroupSelectionScreen from './src/screens/GroupSelectionScreen';
 import { onAuthChange, AuthUser, getCurrentUser } from './src/services/authService';
 import { groupService } from './src/services/dataService';
 import { COLORS } from './src/constants';
-
-// 전역 상태 컨텍스트 생성
-interface GlobalContextType {
-  refreshTrigger: number;
-  triggerRefresh: () => void;
-  currentGroup: any | null;
-}
-
-const GlobalContext = createContext<GlobalContextType>({
-  refreshTrigger: 0,
-  triggerRefresh: () => {},
-  currentGroup: null,
-});
-
-export const useGlobalContext = () => useContext(GlobalContext);
+import GlobalContext from './src/contexts/GlobalContext';
 
 export default function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
