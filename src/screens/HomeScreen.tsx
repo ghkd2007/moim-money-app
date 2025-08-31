@@ -599,7 +599,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           style={styles.smsButton} 
           onPress={() => setShowSMSModal(true)}
         >
-          <Smartphone size={20} color="#92400E" style={styles.smsButtonIcon} />
+          <Smartphone size={20} color={COLORS.warning} style={styles.smsButtonIcon} />
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
@@ -647,13 +647,13 @@ const styles = StyleSheet.create({
   // 기본 컨테이너
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   loadingText: {
     fontSize: 16,
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.border,
     minHeight: 60,
   },
   groupSwitcher: {
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 12,
   },
   groupName: {
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surfaceSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 20,
     paddingVertical: 14,
-    backgroundColor: '#FEF3C7', // 연한 노란색 배경
+    backgroundColor: COLORS.surfaceSecondary, // 다크 테마 배경
     borderRadius: 16,
     borderWidth: 2,
     borderColor: '#F59E0B', // 진한 노간색 테두리
@@ -925,7 +925,7 @@ const styles = StyleSheet.create({
   smsButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#92400E', // 진한 노란색 텍스트
+    color: COLORS.text, // 다크 테마 텍스트
   },
 
   // 하단 여백
@@ -1078,7 +1078,7 @@ const styles = StyleSheet.create({
   },
   budgetProgressBar: {
     height: 8,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 4,
     overflow: 'hidden',
   },
