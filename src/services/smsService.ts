@@ -1,11 +1,11 @@
 import * as Notifications from "expo-notifications";
 import { Alert, Platform } from "react-native";
-import { 
-  checkRealSMSPermission, 
-  requestRealSMSPermission, 
-  readRealSMSMessages,
-  SMSTestUtils 
-} from './realSMSService';
+import {
+	checkRealSMSPermission,
+	requestRealSMSPermission,
+	readRealSMSMessages,
+	SMSTestUtils,
+} from "./realSMSService";
 
 export interface SMSMessage {
 	id: string;
@@ -608,17 +608,19 @@ class RealSMSReader implements SMSReader {
 		try {
 			console.log("RealSMSReader: 실제 SMS 읽기 시작");
 			const realMessages = await readRealSMSMessages();
-			
+
 			// RealSMSMessage를 SMSMessage 형식으로 변환
-			const convertedMessages: SMSMessage[] = realMessages.map(msg => ({
+			const convertedMessages: SMSMessage[] = realMessages.map((msg) => ({
 				id: msg.id,
 				address: msg.address,
 				body: msg.body,
 				date: msg.date,
 				type: msg.type,
 			}));
-			
-			console.log(`RealSMSReader: ${convertedMessages.length}개 SMS 메시지 변환 완료`);
+
+			console.log(
+				`RealSMSReader: ${convertedMessages.length}개 SMS 메시지 변환 완료`
+			);
 			return convertedMessages;
 		} catch (error) {
 			console.error("RealSMSReader: SMS 읽기 실패:", error);

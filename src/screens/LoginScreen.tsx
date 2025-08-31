@@ -85,10 +85,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <View style={styles.logoSection}>
           <View style={styles.logoContainer}>
             <View style={styles.logoIcon}>
-              <Text style={styles.logoIconText}>W</Text>
+              <Text style={styles.logoIconText}>모</Text>
             </View>
           </View>
-          <Text style={styles.appName}>머니투게더</Text>
+          <Text style={styles.appName}>모임머니</Text>
           <Text style={styles.subtitle}>모임과 함께하는 스마트 가계부</Text>
         </View>
 
@@ -120,6 +120,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               <TextInput
                 style={styles.input}
                 placeholder="이름을 입력하세요"
+                placeholderTextColor={COLORS.textLight}
                 value={displayName}
                 onChangeText={setDisplayName}
                 autoCapitalize="words"
@@ -134,6 +135,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             <TextInput
               style={styles.input}
               placeholder="이메일을 입력하세요"
+              placeholderTextColor={COLORS.textLight}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -149,6 +151,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             <TextInput
               style={styles.input}
               placeholder="비밀번호를 입력하세요"
+              placeholderTextColor={COLORS.textLight}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -289,14 +292,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.backgroundSecondary,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     color: COLORS.text,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.surface,
   },
   primaryButton: {
     backgroundColor: COLORS.primary,

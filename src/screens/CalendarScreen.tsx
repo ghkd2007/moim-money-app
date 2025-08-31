@@ -30,19 +30,16 @@ const CalendarScreen: React.FC = () => {
 
   // 컴포넌트 마운트/언마운트 로깅
   useEffect(() => {
-    console.log('CalendarScreen: 컴포넌트 마운트됨');
-    console.log('CalendarScreen: DEFAULT_CATEGORIES 테스트:', DEFAULT_CATEGORIES);
-    console.log('CalendarScreen: DEFAULT_CATEGORIES 길이:', DEFAULT_CATEGORIES.length);
-    console.log('CalendarScreen: 의료비 카테고리 찾기 테스트:', DEFAULT_CATEGORIES.find(cat => cat.name === '의료비'));
+
     
     return () => {
-      console.log('CalendarScreen: 컴포넌트 언마운트됨');
+
     };
   }, []);
 
   // 실제 Firebase 데이터 로드
   useEffect(() => {
-    console.log('CalendarScreen: useEffect 실행됨, currentDate:', currentDate);
+
     loadCalendarData();
   }, [currentDate]);
 
@@ -51,29 +48,29 @@ const CalendarScreen: React.FC = () => {
    * categoryId는 실제로 카테고리 이름이 저장되어 있음
    */
   const getCategoryIcon = (categoryName: string): string => {
-    console.log('=== getCategoryIcon 디버깅 시작 ===');
-    console.log('CalendarScreen: getCategoryIcon 호출 - categoryName:', categoryName);
+    // console.log('=== getCategoryIcon 디버깅 시작 ===');
+    // console.log('CalendarScreen: getCategoryIcon 호출 - categoryName:', categoryName);
     
     // 먼저 기본 카테고리에서 이름으로 찾기
     const defaultCategory = DEFAULT_CATEGORIES.find(cat => cat.name === categoryName);
-    console.log('CalendarScreen: 기본 카테고리에서 찾은 결과:', defaultCategory);
+    // console.log('CalendarScreen: 기본 카테고리에서 찾은 결과:', defaultCategory);
     
     if (defaultCategory) {
-      console.log('CalendarScreen: 기본 카테고리 아이콘 반환:', defaultCategory.icon);
+      // console.log('CalendarScreen: 기본 카테고리 아이콘 반환:', defaultCategory.icon);
       return defaultCategory.icon;
     }
     
     // 그룹 카테고리에서 이름으로 찾기
     const groupCategory = categories.find(cat => cat.name === categoryName);
-    console.log('CalendarScreen: 그룹 카테고리에서 찾은 결과:', groupCategory);
+    // console.log('CalendarScreen: 그룹 카테고리에서 찾은 결과:', groupCategory);
     
     if (groupCategory) {
-      console.log('CalendarScreen: 그룹 카테고리 아이콘 반환:', groupCategory.icon);
+      // console.log('CalendarScreen: 그룹 카테고리 아이콘 반환:', groupCategory.icon);
       return groupCategory.icon || '📁';
     }
     
-    console.log('CalendarScreen: 매칭되는 카테고리 없음, 기본 아이콘 반환: 💰');
-    console.log('=== getCategoryIcon 디버깅 끝 ===');
+    // console.log('CalendarScreen: 매칭되는 카테고리 없음, 기본 아이콘 반환: 💰');
+    // console.log('=== getCategoryIcon 디버깅 끝 ===');
     return '💰';
   };
 
@@ -82,7 +79,7 @@ const CalendarScreen: React.FC = () => {
    * categoryId는 실제로 카테고리 이름이 저장되어 있음
    */
   const getCategoryName = (categoryName: string): string => {
-    console.log('CalendarScreen: getCategoryName 호출 - categoryName:', categoryName);
+    // console.log('CalendarScreen: getCategoryName 호출 - categoryName:', categoryName);
     
     // 카테고리 이름이 그대로 저장되어 있으므로 그대로 반환
     return categoryName;
@@ -93,57 +90,57 @@ const CalendarScreen: React.FC = () => {
    */
   const loadCalendarData = async () => {
     try {
-      console.log('CalendarScreen: loadCalendarData 시작');
+      // console.log('CalendarScreen: loadCalendarData 시작');
       setLoading(true);
       
       const user = getCurrentUser();
       if (!user) {
-        console.log('CalendarScreen: 사용자 정보 없음');
+        // console.log('CalendarScreen: 사용자 정보 없음');
         return;
       }
       
-      console.log('CalendarScreen: 사용자 정보:', user);
+      // console.log('CalendarScreen: 사용자 정보:', user);
 
       const groups = await groupService.getByUser(user.uid);
-      console.log('CalendarScreen: 조회된 그룹:', groups);
+      // console.log('CalendarScreen: 조회된 그룹:', groups);
       
       if (groups.length > 0) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
-        console.log(`CalendarScreen: ${year}년 ${month}월 데이터 조회 시작`);
+        // console.log(`CalendarScreen: ${year}년 ${month}월 데이터 조회 시작`);
         
         const monthTransactions = await transactionService.getByMonth(groups[0].id, year, month);
-        console.log('CalendarScreen: 조회된 거래 내역:', monthTransactions);
+        // console.log('CalendarScreen: 조회된 거래 내역:', monthTransactions);
         
         // 카테고리 정보도 함께 로드
         const groupCategories = await categoryService.getByGroup(groups[0].id);
-        console.log('CalendarScreen: 조회된 카테고리:', groupCategories);
-        console.log('CalendarScreen: 첫 번째 거래 내역:', monthTransactions[0]);
-        console.log('CalendarScreen: 첫 번째 거래의 categoryId:', monthTransactions[0]?.categoryId);
-        console.log('CalendarScreen: 첫 번째 거래의 date:', monthTransactions[0]?.date);
-        console.log('CalendarScreen: 첫 번째 거래의 createdAt:', monthTransactions[0]?.createdAt);
+        // console.log('CalendarScreen: 조회된 카테고리:', groupCategories);
+        // console.log('CalendarScreen: 첫 번째 거래 내역:', monthTransactions[0]);
+        // console.log('CalendarScreen: 첫 번째 거래의 categoryId:', monthTransactions[0]?.categoryId);
+        // console.log('CalendarScreen: 첫 번째 거래의 date:', monthTransactions[0]?.date);
+        // console.log('CalendarScreen: 첫 번째 거래의 createdAt:', monthTransactions[0]?.createdAt);
         
         setTransactions(monthTransactions);
         setCategories(groupCategories);
-        console.log('CalendarScreen: transactions 상태 업데이트 완료, 개수:', monthTransactions.length);
+        // console.log('CalendarScreen: transactions 상태 업데이트 완료, 개수:', monthTransactions.length);
         
         // 데이터 로드 완료 후 함수 테스트
-        console.log('=== getCategoryIcon 함수 테스트 시작 ===');
+        // console.log('=== getCategoryIcon 함수 테스트 시작 ===');
         try {
           const medicalIcon = getCategoryIcon('의료비');
-          console.log('의료비 테스트 결과:', medicalIcon);
+          // console.log('의료비 테스트 결과:', medicalIcon);
           
           const shoppingIcon = getCategoryIcon('쇼핑');
-          console.log('쇼핑 테스트 결과:', shoppingIcon);
+          // console.log('쇼핑 테스트 결과:', shoppingIcon);
           
           const foodIcon = getCategoryIcon('식비');
-          console.log('식비 테스트 결과:', foodIcon);
+          // console.log('식비 테스트 결과:', foodIcon);
         } catch (error) {
           console.error('getCategoryIcon 함수 테스트 중 에러:', error);
         }
-        console.log('=== getCategoryIcon 함수 테스트 끝 ===');
+        // console.log('=== getCategoryIcon 함수 테스트 끝 ===');
       } else {
-        console.log('CalendarScreen: 사용자가 속한 그룹 없음');
+        // console.log('CalendarScreen: 사용자가 속한 그룹 없음');
         setTransactions([]);
       }
     } catch (error) {
@@ -152,7 +149,7 @@ const CalendarScreen: React.FC = () => {
       setTransactions([]);
     } finally {
       setLoading(false);
-      console.log('CalendarScreen: loadCalendarData 완료');
+      // console.log('CalendarScreen: loadCalendarData 완료');
     }
   };
 
@@ -232,27 +229,27 @@ const CalendarScreen: React.FC = () => {
 
   // 특정 날짜의 거래 내역 가져오기
   const getTransactionsForDate = (date: Date) => {
-    console.log(`CalendarScreen: getTransactionsForDate 호출 - ${date.toDateString()}`);
-    console.log(`CalendarScreen: 현재 transactions 배열 길이: ${transactions.length}`);
-    console.log(`CalendarScreen: transactions 배열 내용:`, transactions);
+    // console.log(`CalendarScreen: getTransactionsForDate 호출 - ${date.toDateString()}`);
+    // console.log(`CalendarScreen: 현재 transactions 배열 길이: ${transactions.length}`);
+    // console.log(`CalendarScreen: transactions 배열 내용:`, transactions);
     
     // 날짜 비교 로직 개선 - 시간대 차이 문제 해결
     const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const nextDate = new Date(targetDate);
     nextDate.setDate(nextDate.getDate() + 1);
     
-    console.log(`CalendarScreen: 대상 날짜 범위: ${targetDate.toISOString()} ~ ${nextDate.toISOString()}`);
+    // console.log(`CalendarScreen: 대상 날짜 범위: ${targetDate.toISOString()} ~ ${nextDate.toISOString()}`);
     
     const filteredTransactions = transactions.filter(transaction => {
       const transactionDate = new Date(transaction.date);
       const isInRange = transactionDate >= targetDate && transactionDate < nextDate;
       
-      console.log(`CalendarScreen: 거래 날짜: ${transactionDate.toISOString()}, 범위 내: ${isInRange}`);
+      // console.log(`CalendarScreen: 거래 날짜: ${transactionDate.toISOString()}, 범위 내: ${isInRange}`);
       
       return isInRange;
     });
     
-    console.log(`CalendarScreen: ${date.toDateString()} 거래 내역:`, filteredTransactions);
+    // console.log(`CalendarScreen: ${date.toDateString()} 거래 내역:`, filteredTransactions);
     return filteredTransactions;
   };
 
@@ -267,7 +264,7 @@ const CalendarScreen: React.FC = () => {
       .reduce((sum, t) => sum + t.amount, 0);
     
     const net = income - expense;
-    console.log(`CalendarScreen: ${date.toDateString()} 총액 - 수입: ${income}, 지출: ${expense}, 순액: ${net}`);
+    // console.log(`CalendarScreen: ${date.toDateString()} 총액 - 수입: ${income}, 지출: ${expense}, 순액: ${net}`);
     
     return { income, expense, net };
   };
@@ -309,10 +306,10 @@ const CalendarScreen: React.FC = () => {
   const calendarDays = generateCalendarDays();
   
   // 달력 렌더링 전 상태 확인
-  console.log('CalendarScreen: 달력 렌더링 시작');
-  console.log('CalendarScreen: 현재 transactions 상태:', transactions);
-  console.log('CalendarScreen: 현재 월:', currentDate.getMonth() + 1);
-  console.log('CalendarScreen: 현재 연도:', currentDate.getFullYear());
+  // console.log('CalendarScreen: 달력 렌더링 시작');
+  // console.log('CalendarScreen: 현재 transactions 상태:', transactions);
+  // console.log('CalendarScreen: 현재 월:', currentDate.getMonth() + 1);
+  // console.log('CalendarScreen: 현재 연도:', currentDate.getFullYear());
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -347,7 +344,7 @@ const CalendarScreen: React.FC = () => {
 
           // 로깅 추가
           if (isCurrentMonth && hasTransactions) {
-            console.log(`CalendarScreen: ${date.toDateString()} - 거래 있음, 수입: ${dayTotal.income}, 지출: ${dayTotal.expense}`);
+            // console.log(`CalendarScreen: ${date.toDateString()} - 거래 있음, 수입: ${dayTotal.income}, 지출: ${dayTotal.expense}`);
           }
 
           return (
@@ -398,11 +395,11 @@ const CalendarScreen: React.FC = () => {
               data={selectedDateTransactions}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => {
-                console.log('CalendarScreen: 거래 내역 렌더링 - item:', item);
-                console.log('CalendarScreen: 거래 내역의 categoryId:', item.categoryId);
-                console.log('CalendarScreen: 거래 내역의 date:', item.date);
-                console.log('CalendarScreen: 거래 내역의 date 시간 정보 - 시간:', item.date.getHours(), '분:', item.date.getMinutes());
-                console.log('CalendarScreen: 거래 내역의 date ISO 문자열:', item.date.toISOString());
+                // console.log('CalendarScreen: 거래 내역 렌더링 - item:', item);
+                // console.log('CalendarScreen: 거래 내역의 categoryId:', item.categoryId);
+                // console.log('CalendarScreen: 거래 내역의 date:', item.date);
+                // console.log('CalendarScreen: 거래 내역의 date 시간 정보 - 시간:', item.date.getHours(), '분:', item.date.getMinutes());
+                // console.log('CalendarScreen: 거래 내역의 date ISO 문자열:', item.date.toISOString());
                 
                 return (
                   <TouchableOpacity 
@@ -414,7 +411,7 @@ const CalendarScreen: React.FC = () => {
                         <Text style={styles.categoryIcon}>
                           {(() => {
                             const icon = getCategoryIcon(item.categoryId);
-                            console.log('CalendarScreen: 렌더링에서 getCategoryIcon 결과:', icon);
+                            // console.log('CalendarScreen: 렌더링에서 getCategoryIcon 결과:', icon);
                             return icon;
                           })()}
                         </Text>
@@ -426,9 +423,9 @@ const CalendarScreen: React.FC = () => {
                           // item.date는 이미 사용자가 선택한 로컬 시간으로 저장되어 있음
                           const transactionDate = new Date(item.date);
                           
-                          console.log('CalendarScreen: 거래 시간 원본:', item.date);
-                          console.log('CalendarScreen: 거래 시간 Date 객체:', transactionDate);
-                          console.log('CalendarScreen: 시간:', transactionDate.getHours(), '분:', transactionDate.getMinutes());
+                          // console.log('CalendarScreen: 거래 시간 원본:', item.date);
+                          // console.log('CalendarScreen: 거래 시간 Date 객체:', transactionDate);
+                          // console.log('CalendarScreen: 시간:', transactionDate.getHours(), '분:', transactionDate.getMinutes());
                           
                           return transactionDate.toLocaleTimeString('ko-KR', { 
                             hour: '2-digit', 

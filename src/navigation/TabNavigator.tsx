@@ -19,11 +19,15 @@ const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         ⌂
       </Text>
     </View>
-    <Text style={[
-      styles.iconLabel, 
-      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
-      focused && styles.iconLabelFocused
-    ]}>
+    <Text 
+      style={[
+        styles.iconLabel, 
+        { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
+        focused && styles.iconLabelFocused
+      ]}
+      numberOfLines={1}
+      ellipsizeMode="clip"
+    >
       홈
     </Text>
   </View>
@@ -36,11 +40,15 @@ const GroupIcon = ({ color, focused }: { color: string; focused: boolean }) => (
         ⚇
       </Text>
     </View>
-    <Text style={[
-      styles.iconLabel, 
-      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
-      focused && styles.iconLabelFocused
-    ]}>
+    <Text 
+      style={[
+        styles.iconLabel, 
+        { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
+        focused && styles.iconLabelFocused
+      ]}
+      numberOfLines={1}
+      ellipsizeMode="clip"
+    >
       모임
     </Text>
   </View>
@@ -53,11 +61,15 @@ const SettingsIcon = ({ color, focused }: { color: string; focused: boolean }) =
         ⚙
       </Text>
     </View>
-    <Text style={[
-      styles.iconLabel, 
-      { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
-      focused && styles.iconLabelFocused
-    ]}>
+    <Text 
+      style={[
+        styles.iconLabel, 
+        { color: focused ? COLORS.primaryLight : COLORS.textSecondary },
+        focused && styles.iconLabelFocused
+      ]}
+      numberOfLines={1}
+      ellipsizeMode="clip"
+    >
       설정
     </Text>
   </View>
@@ -76,8 +88,8 @@ const TabNavigator: React.FC = () => {
           borderTopColor: COLORS.border,
           elevation: 0,
           shadowOpacity: 0,
-          paddingVertical: 12,
-          height: 80 + Math.max(insets.bottom, 10),
+          paddingVertical: 15, // 패딩을 더 늘림
+          height: 90 + Math.max(insets.bottom, 10), // 높이를 더 늘림
           paddingBottom: Math.max(insets.bottom, 10),
           backdropFilter: 'blur(20px)',
         },
@@ -150,19 +162,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   iconLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 10, // 폰트 크기 적당히 조정
+    fontWeight: '500', // 폰트 굵기도 줄임
     textAlign: 'center',
-    minWidth: 40, // 최소 너비 설정으로 텍스트가 한 줄로 유지되도록
+    minWidth: 60, // 최소 너비를 더 넓게
+    maxWidth: 70, // 최대 너비도 더 넓게
+    flexShrink: 0, // 텍스트가 줄어들지 않도록
   },
   iconLabelFocused: {
     // 선택된 상태 배경 효과
     backgroundColor: 'rgba(168, 85, 247, 0.2)',
-    paddingHorizontal: 10, // 여유 공간 확보
+    paddingHorizontal: 14, // 여유 공간을 더 확보
     paddingVertical: 2,
     borderRadius: 8,
     overflow: 'hidden',
-    minWidth: 40, // 최소 너비 보장
+    minWidth: 60, // 최소 너비를 더 넓게
+    maxWidth: 70, // 최대 너비도 더 넓게
+    flexShrink: 0, // 텍스트가 줄어들지 않도록
   },
 });
 

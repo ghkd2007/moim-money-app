@@ -9,7 +9,6 @@ import {
   TextInput,
   Alert,
   Dimensions,
-  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SCREEN } from '../constants';
@@ -18,7 +17,6 @@ import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
-import SMSTestComponent from '../components/SMSTestComponent';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
@@ -42,7 +40,6 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
-  const [showSMSTestModal, setShowSMSTestModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -346,9 +343,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   // 예산 진행률 색상 가져오기
   const getBudgetProgressColor = (spent: number, budget: number) => {
     const ratio = spent / budget;
-    if (ratio >= 1) return COLORS.danger; // 빨간색 (초과)
-    if (ratio >= 0.8) return COLORS.warning; // 주황색 (경고)
-    return COLORS.success; // 초록색 (정상)
+    if (ratio >= 1) return '#DC2626'; // 빨간색 (초과)
+    if (ratio >= 0.8) return '#F59E0B'; // 주황색 (경고)
+    return '#10B981'; // 초록색 (정상)
   };
 
   if (loading) {
@@ -484,7 +481,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>↗</Text>
+              <Text style={styles.statIcon}>💰</Text>
               <Text style={styles.statLabel}>이번 달 수입</Text>
             </View>
             <Text style={styles.statValue}>
@@ -495,7 +492,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
 
           <View style={styles.statCard}>
             <View style={styles.statHeader}>
-              <Text style={styles.statIcon}>↘</Text>
+              <Text style={styles.statIcon}>💸</Text>
               <Text style={styles.statLabel}>이번 달 지출</Text>
             </View>
             <Text style={styles.statValue}>
@@ -605,17 +602,6 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           <Text style={styles.smsButtonText}>SMS 자동 추가</Text>
         </TouchableOpacity>
 
-        {/* SMS 권한 테스트 버튼 (개발용) */}
-        {__DEV__ && (
-          <TouchableOpacity 
-            style={[styles.smsButton, styles.testButton]} 
-            onPress={() => setShowSMSTestModal(true)}
-          >
-            <Text style={styles.smsButtonIcon}>🧪</Text>
-            <Text style={styles.smsButtonText}>SMS 권한 테스트</Text>
-          </TouchableOpacity>
-        )}
-
 
 
         {/* 하단 여백 */}
@@ -647,20 +633,9 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onExpenseAdd={handleSMSExpenseAdd}
       />
 
-      {/* SMS 테스트 모달 (개발용) */}
-      {showSMSTestModal && (
-        <Modal
-          visible={showSMSTestModal}
-          animationType="slide"
-          presentationStyle="fullScreen"
-        >
-          <SMSTestComponent onClose={() => setShowSMSTestModal(false)} />
-        </Modal>
-      )}
-
       {/* 플로팅 기록하기 버튼 */}
       <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
-        <Text style={styles.floatingButtonIcon}>+</Text>
+        <Text style={styles.floatingButtonIcon}>✏️</Text>
       </TouchableOpacity>
 
     </SafeAreaView>
@@ -671,13 +646,13 @@ const styles = StyleSheet.create({
   // 기본 컨테이너
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8FAFC',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8FAFC',
   },
   loadingText: {
     fontSize: 16,
@@ -694,14 +669,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surface,
+    borderBottomColor: '#E2E8F0',
   },
   groupSwitcher: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#F1F5F9',
     borderRadius: 12,
   },
   groupName: {
@@ -763,7 +738,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     elevation: 2,
-    shadowColor: COLORS.background,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -805,7 +780,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 16,
     elevation: 2,
-    shadowColor: COLORS.background,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -823,12 +798,8 @@ const styles = StyleSheet.create({
   },
   calendarMonth: {
     fontSize: 14,
-    fontWeight: '700', // 폰트 굵기 증가
-    color: COLORS.primaryLight, // 더 밝은 보라색
-    backgroundColor: 'rgba(168, 85, 247, 0.15)', // 약간의 배경
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
   weekHeader: {
     flexDirection: 'row',
@@ -854,7 +825,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.backgroundSecondary,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -867,20 +838,20 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: COLORS.secondary, // 네온 그린
+    backgroundColor: '#FF9800', // 오렌지 색상
   },
   otherMonthDay: {
     backgroundColor: 'transparent',
   },
   todayMiniCell: {
-    backgroundColor: COLORS.primary, // 보라색 배경
-    borderWidth: 2,
-    borderColor: COLORS.primaryLight, // 연한 보라 테두리
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    borderWidth: 3,
+    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
     elevation: 4,
-    shadowColor: COLORS.primary,
+    shadowColor: '#FF9800',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   miniDayNumber: {
     fontSize: 12,
@@ -892,7 +863,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   todayMiniNumber: {
-    color: COLORS.text, // 보라 배경에 화이트 텍스트로 대비 강화
+    color: '#E65100', // 진한 오렌지로 대비 강화
     fontWeight: '800', // 더 굵게
   },
   miniTransactionDot: {
@@ -903,7 +874,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#10B981', // 더 밝은 초록색
     borderWidth: 1,
-    borderColor: COLORS.text, // 흰색 테두리로 대비 강화
+    borderColor: '#FFFFFF', // 흰색 테두리로 대비 강화
   },
 
   // 기록하기 버튼
@@ -940,12 +911,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
     paddingVertical: 14,
-    backgroundColor: COLORS.surface, // 다크 테마 배경
+    backgroundColor: '#FEF3C7', // 연한 노란색 배경
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: COLORS.secondary, // 네온 그린 테두리
+    borderColor: '#F59E0B', // 진한 노란색 테두리
     elevation: 2,
-    shadowColor: COLORS.secondary,
+    shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -957,11 +928,7 @@ const styles = StyleSheet.create({
   smsButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text, // 다크 테마 텍스트
-  },
-  testButton: {
-    borderColor: COLORS.warning, // 테스트 버튼은 노란색 테두리
-    backgroundColor: 'rgba(245, 158, 11, 0.1)', // 노란색 투명 배경
+    color: '#92400E', // 진한 노란색 텍스트
   },
 
   // 하단 여백
@@ -978,7 +945,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     elevation: 2,
-    shadowColor: COLORS.background,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -990,7 +957,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surface,
+    borderBottomColor: '#F1F5F9',
   },
   budgetTitle: {
     fontSize: 18,
@@ -1006,14 +973,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.surface, // 다크 테마에 맞는 배경색
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   monthButtonText: {
-    fontSize: 16, // 크기 증가
-    color: COLORS.primaryLight, // 더 밝은 보라색
-    fontWeight: '700', // 굵기 증가
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   currentMonthText: {
     fontSize: 16,
@@ -1030,7 +997,7 @@ const styles = StyleSheet.create({
   },
   budgetInput: {
     borderWidth: 1,
-    borderColor: COLORS.surface,
+    borderColor: '#E2E8F0',
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
@@ -1079,13 +1046,9 @@ const styles = StyleSheet.create({
   budgetAmount: {
     fontSize: 24,
     fontWeight: '700',
-    color: COLORS.primaryLight, // 더 밝은 보라색 사용
+    color: COLORS.primary,
     flex: 1,
     textAlign: 'center',
-    // 약간의 배경색으로 대비 강화
-    backgroundColor: 'rgba(168, 85, 247, 0.1)',
-    paddingVertical: 8,
-    borderRadius: 8,
   },
   editBudgetButton: {
     paddingHorizontal: 16,
@@ -1117,7 +1080,7 @@ const styles = StyleSheet.create({
   },
   budgetProgressBar: {
     height: 8,
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#F1F5F9',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -1128,11 +1091,11 @@ const styles = StyleSheet.create({
 
   // 거래 내역이 있는 날짜 스타일
   hasTransactionDay: {
-    backgroundColor: COLORS.surface, // 다크 테마 배경
-    borderWidth: 2,
-    borderColor: COLORS.secondary, // 네온 그린 테두리
+    backgroundColor: '#FFF3E0', // 따뜻한 오렌지 크림 배경
+    borderWidth: 3,
+    borderColor: '#FF9800', // 진한 오렌지 테두리로 오늘 날짜 강조
     elevation: 4,
-    shadowColor: COLORS.secondary,
+    shadowColor: '#FF9800',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1144,7 +1107,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: '50%',
     transform: [{ translateX: -12 }], // 중앙 정렬을 위해 절반 크기로 조정
-    backgroundColor: COLORS.secondary, // 네온 그린
+    backgroundColor: '#FF9800', // 오렌지 색상
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -1158,10 +1121,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   incomeAmount: {
-    color: COLORS.income, // 수입 색상
+    color: '#10B981', // 초록색
   },
   expenseAmount: {
-    color: COLORS.expense, // 지출 색상
+    color: '#DC2626', // 빨간색
   },
 
   // 플로팅 기록하기 버튼

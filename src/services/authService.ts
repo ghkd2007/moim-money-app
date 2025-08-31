@@ -6,6 +6,9 @@ import {
 	onAuthStateChanged,
 	User,
 	updateProfile,
+	updatePassword,
+	reauthenticateWithCredential,
+	EmailAuthProvider,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
@@ -86,20 +89,12 @@ export const login = async (
 // 로그아웃
 export const logout = async (): Promise<void> => {
 	try {
-		console.log("authService: 로그아웃 시작");
-		console.log("authService: 현재 사용자:", auth.currentUser);
-
 		await signOut(auth);
-
-		console.log("authService: Firebase signOut 완료");
-		console.log("authService: 로그아웃 후 사용자:", auth.currentUser);
 
 		// 로그아웃 성공 확인
 		if (auth.currentUser) {
 			throw new Error("로그아웃 후에도 사용자가 남아있습니다.");
 		}
-
-		console.log("authService: 로그아웃 성공");
 	} catch (error: any) {
 		console.error("authService: 로그아웃 오류:", error);
 		throw new Error("로그아웃 중 오류가 발생했습니다.");
@@ -108,15 +103,7 @@ export const logout = async (): Promise<void> => {
 
 // 인증 상태 변경 리스너
 export const onAuthChange = (callback: (user: AuthUser | null) => void) => {
-	console.log("authService: onAuthChange 리스너 등록됨");
-
 	return onAuthStateChanged(auth, (user: User | null) => {
-		console.log(
-			"authService: Firebase 인증 상태 변경 감지:",
-			user ? "사용자 있음" : "사용자 없음"
-		);
-		console.log("authService: 사용자 상세 정보:", user);
-
 		if (user) {
 			const authUser = {
 				uid: user.uid,
@@ -124,10 +111,9 @@ export const onAuthChange = (callback: (user: AuthUser | null) => void) => {
 				displayName: user.displayName,
 				photoURL: user.photoURL,
 			};
-			console.log("authService: 콜백 호출 (로그인):", authUser);
+
 			callback(authUser);
 		} else {
-			console.log("authService: 콜백 호출 (로그아웃): null");
 			callback(null);
 		}
 	});
@@ -135,9 +121,7 @@ export const onAuthChange = (callback: (user: AuthUser | null) => void) => {
 
 // 현재 사용자 정보 가져오기
 export const getCurrentUser = (): AuthUser | null => {
-	console.log("authService: getCurrentUser 호출됨");
 	const user = auth.currentUser;
-	console.log("authService: auth.currentUser:", user);
 
 	if (user) {
 		const authUser = {
@@ -146,11 +130,10 @@ export const getCurrentUser = (): AuthUser | null => {
 			displayName: user.displayName,
 			photoURL: user.photoURL,
 		};
-		console.log("authService: 반환할 사용자 정보:", authUser);
+
 		return authUser;
 	}
 
-	console.log("authService: 현재 로그인된 사용자 없음");
 	return null;
 };
 
@@ -184,23 +167,49 @@ export const updateUserProfile = async (
 	}
 };
 
+// 비밀번호 변경
+export const changePassword = async (
+	currentPassword: string,
+	newPassword: string
+): Promise<void> => {
+	const user = auth.currentUser;
+	if (!user || !user.email) throw new Error("로그인된 사용자가 없습니다.");
+
+	try {
+		// 현재 비밀번호로 재인증
+		const credential = EmailAuthProvider.credential(
+			user.email,
+			currentPassword
+		);
+		await reauthenticateWithCredential(user, credential);
+
+		// 새 비밀번호로 업데이트
+		await updatePassword(user, newPassword);
+	} catch (error: any) {
+		console.error("비밀번호 변경 오류:", error);
+		throw new Error(getAuthErrorMessage(error.code));
+	}
+};
+
 // Firebase Auth 오류 메시지 한국어 변환
 const getAuthErrorMessage = (errorCode: string): string => {
 	switch (errorCode) {
 		case "auth/user-not-found":
 			return "존재하지 않는 이메일입니다.";
 		case "auth/wrong-password":
-			return "비밀번호가 올바르지 않습니다.";
+			return "현재 비밀번호가 올바르지 않습니다.";
 		case "auth/email-already-in-use":
 			return "이미 사용 중인 이메일입니다.";
 		case "auth/weak-password":
-			return "비밀번호는 6자리 이상이어야 합니다.";
+			return "새 비밀번호는 6자리 이상이어야 합니다.";
 		case "auth/invalid-email":
 			return "올바르지 않은 이메일 형식입니다.";
 		case "auth/too-many-requests":
 			return "너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.";
 		case "auth/network-request-failed":
 			return "네트워크 연결을 확인해주세요.";
+		case "auth/requires-recent-login":
+			return "보안을 위해 다시 로그인해주세요.";
 		default:
 			return "인증 중 오류가 발생했습니다.";
 	}

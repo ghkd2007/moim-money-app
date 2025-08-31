@@ -139,10 +139,10 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <View style={styles.logoIcon}>
-            <Text style={styles.logoIconText}>W</Text>
+            <Text style={styles.logoIconText}>모</Text>
           </View>
         </View>
-        <Text style={styles.title}>머니투게더</Text>
+        <Text style={styles.title}>모임머니</Text>
         <Text style={styles.subtitle}>모임을 생성하거나 참여해보세요</Text>
       </View>
 

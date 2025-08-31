@@ -95,16 +95,10 @@ export const transactionService = {
 		month: number
 	): Promise<Transaction[]> {
 		try {
-			console.log(
-				`getByMonth 호출: groupId=${groupId}, year=${year}, month=${month}`
-			);
-
 			const startDate = new Date(year, month - 1, 1);
 			const endDate = new Date(year, month, 0, 23, 59, 59);
 
-			console.log(
-				`날짜 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`
-			);
+
 
 			const q = query(
 				collection(db, "transactions"),
@@ -112,7 +106,7 @@ export const transactionService = {
 			);
 
 			const querySnapshot = await getDocs(q);
-			console.log(`전체 거래 내역 수: ${querySnapshot.docs.length}`);
+
 
 			const allTransactions = querySnapshot.docs.map((doc) => {
 				const data = doc.data();
@@ -132,13 +126,7 @@ export const transactionService = {
 							? data.updatedAt.toDate()
 							: new Date(data.updatedAt),
 				};
-				console.log(
-					`거래 내역: ${
-						transaction.id
-					}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${
-						transaction.categoryId
-					}`
-				);
+				// console.log(`거래 내역: ${transaction.id}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${transaction.categoryId}`);
 				return transaction;
 			}) as Transaction[];
 
@@ -146,15 +134,11 @@ export const transactionService = {
 			const filteredTransactions = allTransactions.filter((transaction) => {
 				const isInRange =
 					transaction.date >= startDate && transaction.date <= endDate;
-				console.log(
-					`날짜 필터링: ${transaction.date.toISOString()} - ${
-						isInRange ? "포함" : "제외"
-					}`
-				);
+				// console.log(`날짜 필터링: ${transaction.date.toISOString()} - ${isInRange ? "포함" : "제외"}`);
 				return isInRange;
 			});
 
-			console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
+			// console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
 
 			// 최신순 정렬
 			return filteredTransactions.sort(
@@ -596,16 +580,14 @@ export const budgetService = {
 		month: number
 	): Promise<Transaction[]> {
 		try {
-			console.log(
-				`getByGroupAndMonth 호출: groupId=${groupId}, year=${year}, month=${month}`
-			);
+			// console.log(`getByGroupAndMonth 호출: groupId=${groupId}, year=${year}, month=${month}`);
 
 			// 임시로 단순 쿼리 사용 (인덱스 생성 전까지)
 			const transactionsRef = collection(db, "transactions");
 			const q = query(transactionsRef, where("groupId", "==", groupId));
 
 			const querySnapshot = await getDocs(q);
-			console.log(`전체 거래 내역 수: ${querySnapshot.docs.length}`);
+
 
 			const allTransactions = querySnapshot.docs.map((doc) => {
 				const data = doc.data();
@@ -625,13 +607,7 @@ export const budgetService = {
 							? data.updatedAt.toDate()
 							: new Date(data.updatedAt),
 				};
-				console.log(
-					`거래 내역: ${
-						transaction.id
-					}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${
-						transaction.categoryId
-					}`
-				);
+				// console.log(`거래 내역: ${transaction.id}, 날짜: ${transaction.date.toISOString()}, 카테고리: ${transaction.categoryId}`);
 				return transaction;
 			}) as Transaction[];
 
@@ -639,23 +615,17 @@ export const budgetService = {
 			const startDate = new Date(year, month - 1, 1);
 			const endDate = new Date(year, month, 0, 23, 59, 59);
 
-			console.log(
-				`날짜 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`
-			);
+
 
 			const filteredTransactions = allTransactions.filter((transaction) => {
 				const transactionDate = new Date(transaction.date);
 				const isInRange =
 					transactionDate >= startDate && transactionDate <= endDate;
-				console.log(
-					`날짜 필터링: ${transactionDate.toISOString()} - ${
-						isInRange ? "포함" : "제외"
-					}`
-				);
+				// console.log(`날짜 필터링: ${transactionDate.toISOString()} - ${isInRange ? "포함" : "제외"}`);
 				return isInRange;
 			});
 
-			console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
+			// console.log(`필터링된 거래 내역 수: ${filteredTransactions.length}`);
 
 			return filteredTransactions;
 		} catch (error) {

@@ -1,18 +1,20 @@
 // 설정 화면 컴포넌트 - Dribbble 스타일 다크 테마
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { CommonStyles, Spacing, BorderRadius } from '../styles/commonStyles';
-import { logout } from '../services/authService';
+import { logout, getCurrentUser } from '../services/authService';
+import ChangePasswordModal from '../components/ChangePasswordModal';
+import ExcelExportModal from '../components/ExcelExportModal';
+import { useGlobalContext } from '../../App';
 
 interface SettingItem {
   id: string;
@@ -26,85 +28,53 @@ interface SettingItem {
 }
 
 const SettingsScreen: React.FC = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [userInfo, setUserInfo] = useState<{
+    email: string;
+    displayName: string;
+  } | null>(null);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showExcelExportModal, setShowExcelExportModal] = useState(false);
+  
+  const { currentGroup } = useGlobalContext();
+
+  // 사용자 정보 로드
+  useEffect(() => {
+    const loadUserInfo = () => {
+      const user = getCurrentUser();
+      if (user) {
+        setUserInfo({
+          email: user.email || '이메일 없음',
+          displayName: user.displayName || user.email?.split('@')[0] || '사용자',
+        });
+      }
+    };
+
+    loadUserInfo();
+  }, []);
 
   // 로그아웃 처리 함수
   const handleLogout = async () => {
     try {
-      console.log('로그아웃 시작...');
       await logout();
-      console.log('로그아웃 성공');
     } catch (error) {
-      console.error('로그아웃 실패:', error);
-      if (typeof window !== 'undefined' && window.confirm) {
-        window.confirm('로그아웃 중 오류가 발생했습니다.');
-      } else {
-        Alert.alert(
-          '오류',
-          '로그아웃 중 오류가 발생했습니다.',
-          [{ text: '확인', style: 'default' }]
-        );
-      }
+      Alert.alert(
+        '오류',
+        '로그아웃 중 오류가 발생했습니다.',
+        [{ text: '확인', style: 'default' }]
+      );
     }
   };
 
   const settingsSections: { title: string; items: SettingItem[] }[] = [
     {
-      title: '알림',
-      items: [
-        {
-          id: 'push_notifications',
-          title: '푸시 알림',
-          subtitle: '거래 내역 및 예산 알림 받기',
-          type: 'switch',
-          value: notificationsEnabled,
-          onValueChange: setNotificationsEnabled,
-        },
-        {
-          id: 'email_notifications',
-          title: '이메일 알림',
-          subtitle: '주간/월간 리포트 이메일 받기',
-          type: 'navigation',
-          onPress: () => Alert.alert('알림', '이메일 알림 설정 기능이 곧 추가됩니다!'),
-        },
-      ],
-    },
-    {
-      title: '보안',
-      items: [
-        {
-          id: 'biometric',
-          title: '생체 인증',
-          subtitle: '지문 또는 Face ID로 앱 잠금',
-          type: 'switch',
-          value: biometricEnabled,
-          onValueChange: setBiometricEnabled,
-        },
-        {
-          id: 'change_password',
-          title: '비밀번호 변경',
-          type: 'navigation',
-          onPress: () => Alert.alert('알림', '비밀번호 변경 기능이 곧 추가됩니다!'),
-        },
-      ],
-    },
-    {
       title: '데이터',
       items: [
         {
-          id: 'export_data',
-          title: '데이터 내보내기',
-          subtitle: 'Excel 또는 CSV 형식으로 내보내기',
+          id: 'export_excel',
+          title: '엑셀 내보내기',
+          subtitle: '거래내역을 엑셀 파일로 내보내기',
           type: 'navigation',
-          onPress: () => Alert.alert('알림', '데이터 내보내기 기능이 곧 추가됩니다!'),
-        },
-        {
-          id: 'backup',
-          title: '백업 및 동기화',
-          subtitle: '클라우드 백업 설정',
-          type: 'navigation',
-          onPress: () => Alert.alert('알림', '백업 기능이 곧 추가됩니다!'),
+          onPress: () => setShowExcelExportModal(true),
         },
       ],
     },
@@ -118,23 +88,18 @@ const SettingsScreen: React.FC = () => {
           type: 'navigation',
           onPress: () => {},
         },
-        {
-          id: 'terms',
-          title: '이용약관',
-          type: 'navigation',
-          onPress: () => Alert.alert('알림', '이용약관 페이지가 곧 추가됩니다!'),
-        },
-        {
-          id: 'privacy',
-          title: '개인정보처리방침',
-          type: 'navigation',
-          onPress: () => Alert.alert('알림', '개인정보처리방침 페이지가 곧 추가됩니다!'),
-        },
       ],
     },
     {
       title: '계정',
       items: [
+        {
+          id: 'change_password',
+          title: '비밀번호 변경',
+          subtitle: '현재 비밀번호를 변경합니다',
+          type: 'navigation',
+          onPress: () => setShowChangePasswordModal(true),
+        },
         {
           id: 'logout',
           title: '로그아웃',
@@ -161,7 +126,6 @@ const SettingsScreen: React.FC = () => {
         key={item.id}
         style={styles.settingItem}
         onPress={item.onPress}
-        disabled={item.type === 'switch'}
         activeOpacity={0.7}
       >
         <View style={styles.settingItemContent}>
@@ -178,17 +142,8 @@ const SettingsScreen: React.FC = () => {
           </View>
           
           <View style={styles.settingItemAction}>
-            {item.type === 'switch' && (
-              <Switch
-                value={item.value}
-                onValueChange={item.onValueChange}
-                trackColor={{ false: COLORS.border, true: COLORS.primary }}
-                thumbColor={item.value ? '#FFFFFF' : COLORS.textSecondary}
-                ios_backgroundColor={COLORS.border}
-              />
-            )}
             {item.type === 'navigation' && !item.destructive && (
-              <Text style={styles.chevron}>⌄</Text>
+              <Text style={styles.chevron}>→</Text>
             )}
           </View>
         </View>
@@ -209,8 +164,12 @@ const SettingsScreen: React.FC = () => {
           <View style={styles.profileIcon}>
             <Text style={styles.profileIconText}>👤</Text>
           </View>
-          <Text style={[CommonStyles.gradientText, styles.profileName]}>사용자</Text>
-          <Text style={[CommonStyles.gradientText, styles.profileEmail]}>user@example.com</Text>
+          <Text style={[CommonStyles.gradientText, styles.profileName]}>
+            {userInfo?.displayName || '사용자'}
+          </Text>
+          <Text style={[CommonStyles.gradientText, styles.profileEmail]}>
+            {userInfo?.email || 'user@example.com'}
+          </Text>
         </View>
 
         {/* 설정 섹션들 */}
@@ -233,6 +192,19 @@ const SettingsScreen: React.FC = () => {
         {/* 하단 여백 */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* 비밀번호 변경 모달 */}
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
+
+      {/* 엑셀 내보내기 모달 */}
+      <ExcelExportModal
+        visible={showExcelExportModal}
+        onClose={() => setShowExcelExportModal(false)}
+        currentGroup={currentGroup}
+      />
     </SafeAreaView>
   );
 };
@@ -325,7 +297,7 @@ const styles = StyleSheet.create({
   chevron: {
     fontSize: 16,
     color: COLORS.textSecondary,
-    transform: [{ rotate: '-90deg' }],
+    fontWeight: '500',
   },
   
   separator: {

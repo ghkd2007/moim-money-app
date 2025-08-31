@@ -92,16 +92,16 @@ Start now and experience transparent and smart shared expense tracking!
 가계부, 공유가계부, 모임비, 정산, 가족가계부, 여행경비, 지출관리, 공동경비, 룸메이트, 동아리회비
 
 ## 개인정보처리방침 URL
-https://your-domain.com/privacy-policy
-(실제 개인정보처리방침 페이지 URL로 교체 필요)
+[개인정보처리방침 URL] (GitHub Pages, Notion 등을 활용하여 호스팅)
+(예: https://username.github.io/moim-money-privacy-policy)
 
 ## 지원 이메일
-support@moimoney.app
-(실제 지원 이메일로 교체 필요)
+[개발자 이메일 주소] (실제 이메일로 교체 필요)
+(예: 기존 Gmail 계정 또는 새로운 앱 전용 계정)
 
-## 웹사이트 URL
-https://moimoney.app
-(실제 웹사이트 URL로 교체 필요)
+## 웹사이트 URL (선택사항)
+[웹사이트 URL] (없으면 비워두거나 GitHub 저장소 링크 사용)
+(예: https://github.com/username/moim-money-app)
 
 ## 스크린샷 요구사항
 

@@ -7,7 +7,7 @@ import TabNavigator from './src/navigation/TabNavigator';
 import LoginScreen from './src/screens/LoginScreen';
 import GroupSelectionScreen from './src/screens/GroupSelectionScreen';
 // import { FirebaseTest } from './src/components/FirebaseTest'; // 테스트 완료로 제거
-import { onAuthChange, AuthUser } from './src/services/authService';
+import { onAuthChange, AuthUser, getCurrentUser } from './src/services/authService';
 import { groupService } from './src/services/dataService';
 import { COLORS } from './src/constants';
 
@@ -15,11 +15,13 @@ import { COLORS } from './src/constants';
 interface GlobalContextType {
   refreshTrigger: number;
   triggerRefresh: () => void;
+  currentGroup: any | null;
 }
 
 const GlobalContext = createContext<GlobalContextType>({
   refreshTrigger: 0,
   triggerRefresh: () => {},
+  currentGroup: null,
 });
 
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -29,6 +31,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasGroup, setHasGroup] = useState<boolean | null>(null);
   const [currentGroupId, setCurrentGroupId] = useState<string | null>(null);
+  const [currentGroup, setCurrentGroup] = useState<any | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // 전역 새로고침 트리거 함수
@@ -39,25 +42,22 @@ export default function App() {
   useEffect(() => {
     // Firebase Auth 상태 변경 리스너
     const unsubscribe = onAuthChange(async (authUser) => {
-      console.log('App: 인증 상태 변경됨:', authUser ? '로그인' : '로그아웃');
-      console.log('App: 사용자 정보:', authUser);
+
       
       setUser(authUser);
       
       if (authUser) {
         // 로그인된 경우 사용자의 그룹 확인
         try {
-          console.log('App: 그룹 조회 시작');
           const groups = await groupService.getByUser(authUser.uid);
-          console.log('App: 조회된 그룹:', groups);
           
           if (groups.length > 0) {
             setHasGroup(true);
             setCurrentGroupId(groups[0].id);
-            console.log('App: 그룹 설정 완료:', groups[0].id);
+            setCurrentGroup(groups[0]);
           } else {
             setHasGroup(false);
-            console.log('App: 사용자에게 그룹 없음');
+            setCurrentGroup(null);
           }
         } catch (error) {
           console.error('App: 그룹 조회 오류:', error);
@@ -65,9 +65,10 @@ export default function App() {
         }
       } else {
         // 로그아웃된 경우
-        console.log('App: 로그아웃 처리 - 상태 초기화');
+
         setHasGroup(null);
         setCurrentGroupId(null);
+        setCurrentGroup(null);
       }
       
       setIsLoading(false);
@@ -78,9 +79,21 @@ export default function App() {
   }, []);
 
   // 그룹 선택 완료 핸들러
-  const handleGroupSelected = (groupId: string) => {
+  const handleGroupSelected = async (groupId: string) => {
     setCurrentGroupId(groupId);
     setHasGroup(true);
+    
+    // 선택된 그룹의 전체 정보를 로드
+    try {
+      const user = getCurrentUser();
+      if (user) {
+        const groups = await groupService.getByUser(user.uid);
+        const selectedGroup = groups.find(g => g.id === groupId);
+        setCurrentGroup(selectedGroup || null);
+      }
+    } catch (error) {
+      console.error('그룹 정보 로드 실패:', error);
+    }
   };
 
   // 로딩 중 화면
@@ -95,7 +108,7 @@ export default function App() {
   }
 
   return (
-    <GlobalContext.Provider value={{ refreshTrigger, triggerRefresh }}>
+    <GlobalContext.Provider value={{ refreshTrigger, triggerRefresh, currentGroup }}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <StatusBar style="dark" />
