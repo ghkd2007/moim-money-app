@@ -395,70 +395,48 @@ const GroupScreen: React.FC = () => {
       <View style={styles.groupSwitchSection}>
         <Text style={styles.groupSwitchTitle}>다른 모임으로 변경</Text>
         
-        {/* 디버깅 정보 */}
-        <Text style={styles.debugText}>
-          전체 모임: {allGroups.length}개, 현재 모임: {currentGroup?.name || '없음'}
-        </Text>
-        
-        {allGroups.length > 1 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupCardsContainer}>
-            {allGroups
-              .filter(group => group.id !== currentGroup?.id)
-              .map(group => (
-                <TouchableOpacity
-                  key={group.id}
-                  style={styles.groupSwitchCard}
-                  onPress={() => handleGroupChange(group)}
-                >
-                  <View style={styles.groupCardHeader}>
-                    <Text style={styles.groupCardIcon}>⛇</Text>
-                    <Text style={styles.groupCardName}>{group.name}</Text>
-                  </View>
-                  <Text style={styles.groupCardMembers}>
-                    {group.members?.length || 0}명 참여 중
-                  </Text>
-                  <View style={styles.groupCardFooter}>
-                    <Text style={styles.groupCardAction}>변경하기</Text>
-                    <Text style={styles.groupCardArrow}>→</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-              
-            {/* 새 모임 추가 카드 */}
-            <TouchableOpacity
-              style={styles.addGroupCard}
-              onPress={handleAddNewGroup}
-            >
-              <View style={styles.addGroupCardContent}>
-                <View style={styles.addGroupIconContainer}>
-                  <Text style={styles.addGroupIcon}>+</Text>
+        <View style={styles.groupCardsContainer}>
+          {/* 다른 모임 카드들 */}
+          {allGroups.length > 1 && allGroups
+            .filter(group => group.id !== currentGroup?.id)
+            .map(group => (
+              <TouchableOpacity
+                key={group.id}
+                style={styles.groupSwitchCard}
+                onPress={() => handleGroupChange(group)}
+              >
+                <View style={styles.groupCardHeader}>
+                  <Text style={styles.groupCardIcon}>⛇</Text>
+                  <Text style={styles.groupCardName}>{group.name}</Text>
                 </View>
+                <Text style={styles.groupCardMembers}>
+                  {group.members?.length || 0}명 참여 중
+                </Text>
+                <View style={styles.groupCardFooter}>
+                  <Text style={styles.groupCardAction}>변경하기</Text>
+                  <Text style={styles.groupCardArrow}>→</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+            
+          {/* 새 모임 추가 카드 */}
+          <TouchableOpacity
+            style={styles.addGroupCard}
+            onPress={handleAddNewGroup}
+          >
+            <View style={styles.addGroupCardContent}>
+              <View style={styles.addGroupIconContainer}>
+                <Text style={styles.addGroupIcon}>+</Text>
+              </View>
+              <View style={styles.addGroupTextContainer}>
                 <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
                 <Text style={styles.addGroupCardSubtitle}>
                   친구들과 새로운 모임을 시작해보세요
                 </Text>
               </View>
-            </TouchableOpacity>
-          </ScrollView>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupCardsContainer}>
-            {/* 모임이 1개일 때도 새 모임 추가 카드 표시 */}
-            <TouchableOpacity
-              style={styles.addGroupCard}
-              onPress={handleAddNewGroup}
-            >
-              <View style={styles.addGroupCardContent}>
-                <View style={styles.addGroupIconContainer}>
-                  <Text style={styles.addGroupIcon}>+</Text>
-                </View>
-                <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
-                <Text style={styles.addGroupCardSubtitle}>
-                  친구들과 새로운 모임을 시작해보세요
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </ScrollView>
-        )}
+            </View>
+          </TouchableOpacity>
+        </View>
         
 
       </View>
@@ -771,17 +749,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   groupCardsContainer: {
-    flexDirection: 'row',
-    paddingLeft: 4,
-    minHeight: 150,
+    flex: 1,
   },
   groupSwitchCard: {
     backgroundColor: '#2A2D3A', // 더 밝은 회색으로 명확히 구분
     borderRadius: 16,
-    padding: 16,
-    marginRight: 12,
-    width: 200,
-    height: 140,
+    padding: 20,
+    marginBottom: 12,
+    width: '100%',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -829,10 +804,10 @@ const styles = StyleSheet.create({
   addGroupCard: {
     backgroundColor: '#2A2D3A', // 더 밝은 회색으로 명확히 구분
     borderRadius: 16,
-    padding: 20,
-    marginRight: 12,
-    width: 200,
-    height: 140,
+    padding: 24,
+    marginBottom: 12,
+    width: '100%',
+    minHeight: 120,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -843,8 +818,8 @@ const styles = StyleSheet.create({
   },
 
   addGroupCardContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
   },
 
@@ -855,7 +830,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary + '15',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginRight: 16,
+  },
+
+  addGroupTextContainer: {
+    flex: 1,
   },
 
   addGroupIcon: {
@@ -868,22 +847,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.primary,
-    textAlign: 'center',
     marginBottom: 4,
   },
 
   addGroupCardSubtitle: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    textAlign: 'center',
     lineHeight: 16,
-  },
-
-  debugText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    fontStyle: 'italic',
   },
   singleGroupMessage: {
     backgroundColor: COLORS.surface,
