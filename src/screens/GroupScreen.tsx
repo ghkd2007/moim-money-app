@@ -395,6 +395,11 @@ const GroupScreen: React.FC = () => {
       <View style={styles.groupSwitchSection}>
         <Text style={styles.groupSwitchTitle}>다른 모임으로 변경</Text>
         
+        {/* 디버깅 정보 */}
+        <Text style={styles.debugText}>
+          전체 모임: {allGroups.length}개, 현재 모임: {currentGroup?.name || '없음'}
+        </Text>
+        
         {allGroups.length > 1 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupCardsContainer}>
             {allGroups
@@ -771,17 +776,17 @@ const styles = StyleSheet.create({
     minHeight: 150,
   },
   groupSwitchCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#2A2D3A', // 더 밝은 회색으로 명확히 구분
     borderRadius: 16,
     padding: 16,
     marginRight: 12,
     width: 200,
     height: 140,
-    elevation: 2,
-    shadowColor: COLORS.background,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -822,19 +827,19 @@ const styles = StyleSheet.create({
 
   // 새 모임 추가 카드
   addGroupCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#2A2D3A', // 더 밝은 회색으로 명확히 구분
     borderRadius: 16,
     padding: 20,
     marginRight: 12,
     width: 200,
     height: 140,
-    elevation: 2,
-    shadowColor: COLORS.background,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     borderWidth: 2,
-    borderColor: COLORS.primary + '60',
+    borderColor: COLORS.primary,
   },
 
   addGroupCardContent: {
@@ -872,6 +877,13 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 16,
+  },
+
+  debugText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+    fontStyle: 'italic',
   },
   singleGroupMessage: {
     backgroundColor: COLORS.surface,
