@@ -9,6 +9,7 @@ import {
   Share,
   ActivityIndicator,
 } from 'react-native';
+import { Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency } from '../utils';
@@ -194,6 +195,29 @@ const GroupScreen: React.FC = () => {
     setLoading(true);
     await loadMemberStatistics(group);
     setLoading(false);
+  };
+
+  /**
+   * 새 모임 추가 핸들러
+   */
+  const handleAddNewGroup = () => {
+    Alert.alert(
+      '새 모임 만들기',
+      '새로운 모임을 만드시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '만들기',
+          onPress: () => {
+            // TODO: 모임 생성 화면으로 이동
+            Alert.alert('준비 중', '모임 생성 기능은 곧 추가됩니다!');
+          },
+        },
+      ]
+    );
   };
 
 
@@ -395,18 +419,44 @@ const GroupScreen: React.FC = () => {
                   </View>
                 </TouchableOpacity>
               ))}
+              
+            {/* 새 모임 추가 카드 */}
+            <TouchableOpacity
+              style={styles.addGroupCard}
+              onPress={handleAddNewGroup}
+            >
+              <View style={styles.addGroupCardContent}>
+                <View style={styles.addGroupIconContainer}>
+                  <Plus size={32} color={COLORS.primary} />
+                </View>
+                <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
+                <Text style={styles.addGroupCardSubtitle}>
+                  친구들과 새로운 모임을 시작해보세요
+                </Text>
+              </View>
+            </TouchableOpacity>
           </ScrollView>
         ) : (
-          <View style={styles.singleGroupMessage}>
-            <Text style={styles.singleGroupIcon}>⌂</Text>
-            <Text style={styles.singleGroupText}>
-              현재 참여 중인 모임이 1개입니다.
-            </Text>
-            <Text style={styles.singleGroupSubText}>
-              새로운 모임을 만들거나 초대받아 참여해보세요!
-            </Text>
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupCardsContainer}>
+            {/* 모임이 1개일 때도 새 모임 추가 카드 표시 */}
+            <TouchableOpacity
+              style={styles.addGroupCard}
+              onPress={handleAddNewGroup}
+            >
+              <View style={styles.addGroupCardContent}>
+                <View style={styles.addGroupIconContainer}>
+                  <Plus size={32} color={COLORS.primary} />
+                </View>
+                <Text style={styles.addGroupCardTitle}>새 모임 만들기</Text>
+                <Text style={styles.addGroupCardSubtitle}>
+                  친구들과 새로운 모임을 시작해보세요
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </ScrollView>
         )}
+        
+
       </View>
 
       {/* 빈 공간 */}
@@ -766,6 +816,55 @@ const styles = StyleSheet.create({
   groupCardArrow: {
     fontSize: 16,
     color: COLORS.primary,
+  },
+
+  // 새 모임 추가 카드
+  addGroupCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 12,
+    width: 200,
+    elevation: 2,
+    shadowColor: COLORS.background,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderStyle: 'dashed',
+  },
+
+  addGroupCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    minHeight: 120,
+  },
+
+  addGroupIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+
+  addGroupCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+
+  addGroupCardSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   singleGroupMessage: {
     backgroundColor: COLORS.surface,
