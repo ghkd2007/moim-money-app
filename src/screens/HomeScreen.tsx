@@ -17,7 +17,8 @@ import { Transaction, Group } from '../types';
 import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
-import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown } from 'lucide-react-native';
+import TransactionListModal from '../components/TransactionListModal';
+import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown, ChevronRight, Calendar, Receipt } from 'lucide-react-native';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
@@ -41,6 +42,7 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showDailyModal, setShowDailyModal] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
+  const [showTransactionListModal, setShowTransactionListModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -588,11 +590,66 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
           </View>
         </View>
 
-        {/* 기록하기 버튼 */}
-        {/* <TouchableOpacity style={styles.quickAddButton} onPress={handleQuickAdd}>
-          <Text style={styles.quickAddIcon}>✏️</Text>
-          <Text style={styles.quickAddText}>기록하기</Text>
-        </TouchableOpacity> */}
+        {/* 최근 거래내역 섹션 */}
+        <View style={styles.recentTransactionsSection}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <Receipt size={20} color={COLORS.text} />
+              <Text style={styles.sectionTitle}>최근 거래내역</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => setShowTransactionListModal(true)}
+            >
+              <Text style={styles.viewAllText}>전체보기</Text>
+              <ChevronRight size={16} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {monthlyTransactions.length > 0 ? (
+            <View style={styles.transactionsList}>
+              {monthlyTransactions
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .slice(0, 5) // 최근 5개만 표시
+                .map((transaction, index) => (
+                  <View key={transaction.id} style={styles.transactionItem}>
+                    <View style={styles.transactionLeft}>
+                      <View style={[
+                        styles.transactionTypeIcon,
+                        { backgroundColor: transaction.type === 'income' ? COLORS.success + '20' : COLORS.danger + '20' }
+                      ]}>
+                        {transaction.type === 'income' ? (
+                          <TrendingUp size={16} color={COLORS.success} />
+                        ) : (
+                          <TrendingDown size={16} color={COLORS.danger} />
+                        )}
+                      </View>
+                      <View style={styles.transactionInfo}>
+                        <Text style={styles.transactionDescription}>
+                          {transaction.description || transaction.category}
+                        </Text>
+                        <Text style={styles.transactionDate}>
+                          {formatDate(new Date(transaction.date))}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={[
+                      styles.transactionAmount,
+                      { color: transaction.type === 'income' ? COLORS.success : COLORS.danger }
+                    ]}>
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                    </Text>
+                  </View>
+                ))}
+            </View>
+          ) : (
+            <View style={styles.emptyTransactions}>
+              <Calendar size={32} color={COLORS.textSecondary} />
+              <Text style={styles.emptyTransactionsText}>아직 거래내역이 없습니다</Text>
+              <Text style={styles.emptyTransactionsSubtext}>플로팅 버튼을 눌러 첫 거래를 추가해보세요</Text>
+            </View>
+          )}
+        </View>
 
         {/* SMS 자동 지출 추가 버튼 */}
         <TouchableOpacity 
@@ -632,6 +689,15 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         visible={showSMSModal}
         onClose={() => setShowSMSModal(false)}
         onExpenseAdd={handleSMSExpenseAdd}
+      />
+
+      {/* 거래내역 전체보기 모달 */}
+      <TransactionListModal
+        visible={showTransactionListModal}
+        onClose={() => setShowTransactionListModal(false)}
+        transactions={monthlyTransactions}
+        onEditTransaction={handleEditTransaction}
+        onDeleteTransaction={handleDeleteTransaction}
       />
 
       {/* 플로팅 기록하기 버튼 */}
@@ -931,6 +997,117 @@ const styles = StyleSheet.create({
   // 하단 여백
   bottomSpacing: {
     height: 120, // 플로팅 버튼 공간까지 확보
+  },
+
+  // 최근 거래내역 섹션
+  recentTransactionsSection: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 16,
+    padding: 20,
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginLeft: 8,
+  },
+
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  viewAllText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginRight: 4,
+  },
+
+  transactionsList: {
+    gap: 12,
+  },
+
+  transactionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  transactionTypeIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+
+  transactionInfo: {
+    flex: 1,
+  },
+
+  transactionDescription: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+
+  transactionDate: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
+  emptyTransactions: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+
+  emptyTransactionsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+
+  emptyTransactionsSubtext: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
 
 

@@ -1,245 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
-  FlatList,
-  TextInput,
-  Alert,
-  RefreshControl,
   ScrollView,
+  Pressable,
+  TextInput,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
 import { formatCurrency, formatDate } from '../utils';
-import { Transaction, Group } from '../types';
-import { transactionService } from '../services/dataService';
-import { getCurrentUser } from '../services/authService';
-import { useGlobalContext } from '../../App';
+import { Transaction } from '../types';
+import { TrendingUp, TrendingDown, X, Search, Calendar } from 'lucide-react-native';
 
-interface Props {
+interface TransactionListModalProps {
   visible: boolean;
   onClose: () => void;
-  currentGroup: Group | null;
+  transactions: Transaction[];
+  onEditTransaction?: (transaction: Transaction) => void;
+  onDeleteTransaction?: (transactionId: string) => void;
 }
 
-const TransactionListModal: React.FC<Props> = ({ visible, onClose, currentGroup }) => {
-  const { triggerRefresh } = useGlobalContext();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+const TransactionListModal: React.FC<TransactionListModalProps> = ({
+  visible,
+  onClose,
+  transactions,
+  onEditTransaction,
+  onDeleteTransaction,
+}) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'income' | 'expense'>('all');
-  const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'month' | 'week'>('month');
-  const [groupMembers, setGroupMembers] = useState<{[key: string]: string}>({});
+  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
 
-  // 사용자 이름을 가져오는 함수
-  const getUserDisplayName = (userId: string): string => {
-    if (!userId) return '알 수 없음';
-    if (userId === getCurrentUser()?.uid) return '나';
-    return groupMembers[userId] || '사용자';
-  };
-
-  // 그룹 멤버 정보 로드
-  const loadGroupMembers = async () => {
-    if (!currentGroup) return;
+  // 거래 내역 필터링
+  const filteredTransactions = transactions.filter(transaction => {
+    const matchesSearch = transaction.description?.toLowerCase().includes(searchText.toLowerCase()) ||
+                         transaction.category?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesType = filterType === 'all' || transaction.type === filterType;
     
-    try {
-      const members: {[key: string]: string} = {};
-      currentGroup.members.forEach((memberId, index) => {
-        if (memberId === getCurrentUser()?.uid) {
-          members[memberId] = '나';
-        } else {
-          members[memberId] = `멤버${index + 1}`;
-        }
-      });
-      setGroupMembers(members);
-    } catch (error) {
-      console.error('그룹 멤버 로드 실패:', error);
-    }
-  };
+    return matchesSearch && matchesType;
+  });
 
-  // 거래 내역 로드
-  const loadTransactions = async () => {
-    if (!currentGroup) return;
+  // 수입/지출 합계 계산
+  const totalIncome = filteredTransactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
 
-    try {
-      setLoading(true);
-      const user = getCurrentUser();
-      if (!user) return;
+  const totalExpense = filteredTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
 
-      // 현재 월의 거래 내역 조회
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      
-      const allTransactions = await transactionService.getByMonth(currentGroup.id, year, month);
-      setTransactions(allTransactions);
-      
-      // 초기 필터링 적용
-      applyFilters(allTransactions, selectedFilter, selectedPeriod, searchText);
-    } catch (error) {
-      console.error('거래 내역 로드 실패:', error);
-      Alert.alert('오류', '거래 내역을 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 새로고침
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadTransactions();
-    setRefreshing(false);
-  };
-
-  // 필터 적용
-  const applyFilters = (
-    allTransactions: Transaction[],
-    typeFilter: 'all' | 'income' | 'expense',
-    periodFilter: 'all' | 'month' | 'week',
-    searchQuery: string
-  ) => {
-    let filtered = [...allTransactions];
-
-    // 타입 필터
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(t => t.type === typeFilter);
-    }
-
-    // 기간 필터 (현재는 이미 월별로 로드하므로 week만 추가 필터링)
-    if (periodFilter === 'week') {
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-      
-      filtered = filtered.filter(t => new Date(t.date) >= weekStart);
-    }
-
-    // 검색 필터
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(t => 
-        (t.memo || '').toLowerCase().includes(query) ||
-        t.categoryId.toLowerCase().includes(query)
-      );
-    }
-
-    // 최신순 정렬
-    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    setFilteredTransactions(filtered);
-  };
-
-  // 필터 변경 핸들러
-  const handleFilterChange = (
-    typeFilter?: 'all' | 'income' | 'expense',
-    periodFilter?: 'all' | 'month' | 'week',
-    searchQuery?: string
-  ) => {
-    const newTypeFilter = typeFilter ?? selectedFilter;
-    const newPeriodFilter = periodFilter ?? selectedPeriod;
-    const newSearchQuery = searchQuery ?? searchText;
-
-    if (typeFilter !== undefined) setSelectedFilter(typeFilter);
-    if (periodFilter !== undefined) setSelectedPeriod(periodFilter);
-    if (searchQuery !== undefined) setSearchText(searchQuery);
-
-    applyFilters(transactions, newTypeFilter, newPeriodFilter, newSearchQuery);
-  };
-
-  // 거래 삭제
-  const handleDeleteTransaction = async (transaction: Transaction) => {
-    Alert.alert(
-      '거래 삭제',
-      '이 거래를 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await transactionService.delete(transaction.id);
-              await loadTransactions();
-              triggerRefresh(); // 홈화면도 새로고침
-            } catch (error) {
-              Alert.alert('오류', '거래 삭제 중 오류가 발생했습니다.');
-            }
-          }
-        }
-      ]
-    );
-  };
-
-  // 통계 계산
-  const getStatistics = () => {
-    const totalIncome = filteredTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const totalExpense = filteredTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return {
-      totalIncome,
-      totalExpense,
-      netAmount: totalIncome - totalExpense,
-      count: filteredTransactions.length
-    };
-  };
-
-  const statistics = getStatistics();
-
-  // Modal이 열릴 때 데이터 로드
-  useEffect(() => {
-    if (visible && currentGroup) {
-      loadTransactions();
-      loadGroupMembers();
-    }
-  }, [visible, currentGroup]);
-
-  // 거래 아이템 렌더링
-  const renderTransactionItem = ({ item }: { item: Transaction }) => (
-    <TouchableOpacity 
+  const renderTransactionItem = (transaction: Transaction) => (
+    <TouchableOpacity
+      key={transaction.id}
       style={styles.transactionItem}
-      onLongPress={() => handleDeleteTransaction(item)}
+      onPress={() => onEditTransaction?.(transaction)}
+      activeOpacity={0.7}
     >
       <View style={styles.transactionLeft}>
         <View style={[
-          styles.transactionIcon,
-          { backgroundColor: item.type === 'income' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)' }
+          styles.transactionTypeIcon,
+          { backgroundColor: transaction.type === 'income' ? COLORS.success + '20' : COLORS.danger + '20' }
         ]}>
-          <Text style={styles.transactionIconText}>
-            {item.type === 'income' ? '↗' : '↘'}
-          </Text>
+          {transaction.type === 'income' ? (
+            <TrendingUp size={18} color={COLORS.success} />
+          ) : (
+            <TrendingDown size={18} color={COLORS.danger} />
+          )}
         </View>
         <View style={styles.transactionInfo}>
-          <Text style={styles.transactionCategory}>
-            {item.categoryId}
+          <Text style={styles.transactionDescription}>
+            {transaction.description || transaction.category}
           </Text>
-          <Text style={styles.transactionMemo}>
-            {item.memo || '거래 내역'} • {getUserDisplayName(item.userId)}
+          <Text style={styles.transactionCategory}>
+            {transaction.category}
           </Text>
           <Text style={styles.transactionDate}>
-            {formatDate(item.date)}
+            {formatDate(new Date(transaction.date))}
           </Text>
         </View>
       </View>
-      
-      <View style={styles.transactionRight}>
-        <Text style={[
-          styles.transactionAmount,
-          { color: item.type === 'income' ? COLORS.income : COLORS.expense }
-        ]}>
-          {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
-        </Text>
-      </View>
+      <Text style={[
+        styles.transactionAmount,
+        { color: transaction.type === 'income' ? COLORS.success : COLORS.danger }
+      ]}>
+        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -247,330 +93,323 @@ const TransactionListModal: React.FC<Props> = ({ visible, onClose, currentGroup 
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="fullScreen"
+      transparent={true}
+      onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        {/* 헤더 */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={onClose}
-          >
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>전체 거래 내역</Text>
-          <View style={styles.headerRight} />
-        </View>
-
-        {/* 검색바 */}
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="거래 내역 검색..."
-            placeholderTextColor={COLORS.textLight}
-            value={searchText}
-            onChangeText={(text) => handleFilterChange(undefined, undefined, text)}
-          />
-        </View>
-
-        {/* 필터 */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterContainer}>
-          <TouchableOpacity
-            style={[styles.filterChip, selectedFilter === 'all' && styles.filterChipActive]}
-            onPress={() => handleFilterChange('all')}
-          >
-            <Text style={[styles.filterChipText, selectedFilter === 'all' && styles.filterChipTextActive]}>
-              전체
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterChip, selectedFilter === 'income' && styles.filterChipActive]}
-            onPress={() => handleFilterChange('income')}
-          >
-            <Text style={[styles.filterChipText, selectedFilter === 'income' && styles.filterChipTextActive]}>
-              수입
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterChip, selectedFilter === 'expense' && styles.filterChipActive]}
-            onPress={() => handleFilterChange('expense')}
-          >
-            <Text style={[styles.filterChipText, selectedFilter === 'expense' && styles.filterChipTextActive]}>
-              지출
-            </Text>
-          </TouchableOpacity>
-          
-          <View style={styles.filterDivider} />
-          
-          <TouchableOpacity
-            style={[styles.filterChip, selectedPeriod === 'all' && styles.filterChipActive]}
-            onPress={() => handleFilterChange(undefined, 'all')}
-          >
-            <Text style={[styles.filterChipText, selectedPeriod === 'all' && styles.filterChipTextActive]}>
-              전체 기간
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterChip, selectedPeriod === 'month' && styles.filterChipActive]}
-            onPress={() => handleFilterChange(undefined, 'month')}
-          >
-            <Text style={[styles.filterChipText, selectedPeriod === 'month' && styles.filterChipTextActive]}>
-              이번 달
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterChip, selectedPeriod === 'week' && styles.filterChipActive]}
-            onPress={() => handleFilterChange(undefined, 'week')}
-          >
-            <Text style={[styles.filterChipText, selectedPeriod === 'week' && styles.filterChipTextActive]}>
-              이번 주
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
-
-        {/* 통계 요약 */}
-        <View style={styles.statisticsContainer}>
-          <View style={styles.statisticsItem}>
-            <Text style={styles.statisticsLabel}>총 수입</Text>
-            <Text style={[styles.statisticsValue, { color: COLORS.income }]}>
-              +{formatCurrency(statistics.totalIncome)}
-            </Text>
+      <View style={styles.overlay}>
+        <View style={styles.modalContainer}>
+          {/* 헤더 */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>전체 거래내역</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <X size={24} color={COLORS.text} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.statisticsItem}>
-            <Text style={styles.statisticsLabel}>총 지출</Text>
-            <Text style={[styles.statisticsValue, { color: COLORS.expense }]}>
-              -{formatCurrency(statistics.totalExpense)}
-            </Text>
-          </View>
-          <View style={styles.statisticsItem}>
-            <Text style={styles.statisticsLabel}>순액</Text>
-            <Text style={[
-              styles.statisticsValue,
-              { color: statistics.netAmount >= 0 ? COLORS.income : COLORS.expense }
-            ]}>
-              {statistics.netAmount >= 0 ? '+' : ''}{formatCurrency(statistics.netAmount)}
-            </Text>
-          </View>
-          <View style={styles.statisticsItem}>
-            <Text style={styles.statisticsLabel}>거래 수</Text>
-            <Text style={styles.statisticsValue}>
-              {statistics.count}건
-            </Text>
-          </View>
-        </View>
 
-        {/* 거래 목록 */}
-        <FlatList
-          data={filteredTransactions}
-          renderItem={renderTransactionItem}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          style={styles.transactionList}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>📋</Text>
-              <Text style={styles.emptyText}>
-                {searchText ? '검색 결과가 없습니다' : '거래 내역이 없습니다'}
+          {/* 검색 및 필터 */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBox}>
+              <Search size={18} color={COLORS.textSecondary} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="거래내역 검색..."
+                placeholderTextColor={COLORS.textSecondary}
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+            </View>
+          </View>
+
+          {/* 필터 버튼들 */}
+          <View style={styles.filterContainer}>
+            <TouchableOpacity
+              style={[styles.filterButton, filterType === 'all' && styles.activeFilter]}
+              onPress={() => setFilterType('all')}
+            >
+              <Text style={[styles.filterText, filterType === 'all' && styles.activeFilterText]}>
+                전체
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.filterButton, filterType === 'income' && styles.activeFilter]}
+              onPress={() => setFilterType('income')}
+            >
+              <Text style={[styles.filterText, filterType === 'income' && styles.activeFilterText]}>
+                수입
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.filterButton, filterType === 'expense' && styles.activeFilter]}
+              onPress={() => setFilterType('expense')}
+            >
+              <Text style={[styles.filterText, filterType === 'expense' && styles.activeFilterText]}>
+                지출
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 합계 정보 */}
+          <View style={styles.summaryContainer}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>수입</Text>
+              <Text style={[styles.summaryValue, { color: COLORS.success }]}>
+                +{formatCurrency(totalIncome)}
               </Text>
             </View>
-          }
-        />
-      </SafeAreaView>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>지출</Text>
+              <Text style={[styles.summaryValue, { color: COLORS.danger }]}>
+                -{formatCurrency(totalExpense)}
+              </Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>순액</Text>
+              <Text style={[
+                styles.summaryValue,
+                { color: (totalIncome - totalExpense) >= 0 ? COLORS.success : COLORS.danger }
+              ]}>
+                {formatCurrency(totalIncome - totalExpense)}
+              </Text>
+            </View>
+          </View>
+
+          {/* 거래 내역 목록 */}
+          <ScrollView style={styles.transactionsList} showsVerticalScrollIndicator={false}>
+            {filteredTransactions.length > 0 ? (
+              <View style={styles.transactionsContainer}>
+                {filteredTransactions
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .map(renderTransactionItem)}
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Calendar size={48} color={COLORS.textSecondary} />
+                <Text style={styles.emptyTitle}>거래 내역이 없습니다</Text>
+                <Text style={styles.emptySubtitle}>
+                  {searchText ? '검색 조건에 맞는 거래가 없습니다' : '아직 거래 내역이 없어요'}
+                </Text>
+              </View>
+            )}
+            
+            {/* 하단 여백 */}
+            <View style={styles.bottomSpacing} />
+          </ScrollView>
+        </View>
+
+        {/* 배경 터치 시 닫기 */}
+        <Pressable style={styles.backdrop} onPress={onClose} />
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
+  
+  modalContainer: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+    minHeight: '70%',
+  },
+  
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonText: {
-    fontSize: 20,
-    color: COLORS.text,
-    fontWeight: '600',
-  },
+  
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
   },
-  headerRight: {
-    width: 40,
+  
+  closeButton: {
+    padding: 4,
   },
+
   searchContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingTop: 16,
   },
-  searchInput: {
+
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
     fontSize: 16,
     color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
+
   filterContainer: {
+    flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    maxHeight: 60,
+    paddingTop: 16,
+    gap: 12,
   },
-  filterChip: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
+
+  filterButton: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginRight: 8,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    minHeight: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  filterChipActive: {
+
+  activeFilter: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  filterChipText: {
+
+  filterText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-  filterChipTextActive: {
-    color: 'white',
     fontWeight: '600',
-    lineHeight: 18,
+    color: COLORS.textSecondary,
   },
-  filterDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: COLORS.border,
-    marginHorizontal: 8,
-    alignSelf: 'center',
+
+  activeFilterText: {
+    color: COLORS.background,
   },
-  statisticsContainer: {
+
+  summaryContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
-    marginHorizontal: 20,
-    marginVertical: 12,
-    borderRadius: 16,
-    padding: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+    gap: 12,
   },
-  statisticsItem: {
+
+  summaryItem: {
     flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
   },
-  statisticsLabel: {
+
+  summaryLabel: {
     fontSize: 12,
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
-  statisticsValue: {
-    fontSize: 14,
+
+  summaryValue: {
+    fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
   },
-  transactionList: {
+  
+  transactionsList: {
     flex: 1,
     paddingHorizontal: 20,
   },
+  
+  transactionsContainer: {
+    paddingTop: 16,
+  },
+  
   transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     backgroundColor: COLORS.surface,
     borderRadius: 16,
-    padding: 16,
     marginBottom: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
+  
   transactionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  transactionIcon: {
+  
+  transactionTypeIcon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
-  transactionIconText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
+  
   transactionInfo: {
     flex: 1,
   },
-  transactionCategory: {
+  
+  transactionDescription: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
     marginBottom: 2,
   },
-  transactionMemo: {
-    fontSize: 14,
+  
+  transactionCategory: {
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginBottom: 2,
   },
+  
   transactionDate: {
     fontSize: 12,
     color: COLORS.textLight,
   },
-  transactionRight: {
-    alignItems: 'flex-end',
-  },
+  
   transactionAmount: {
     fontSize: 16,
     fontWeight: '700',
   },
-  emptyContainer: {
+  
+  emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontSize: 16,
+  
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: COLORS.textSecondary,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  
+  emptySubtitle: {
+    fontSize: 14,
+    color: COLORS.textLight,
     textAlign: 'center',
+    lineHeight: 20,
+  },
+  
+  bottomSpacing: {
+    height: 20,
+  },
+  
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
   },
 });
 
