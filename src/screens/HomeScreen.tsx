@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SCREEN } from '../constants';
@@ -18,7 +19,7 @@ import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
 import TransactionListModal from '../components/TransactionListModal';
-import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown, ChevronRight, Calendar, Receipt } from 'lucide-react-native';
+import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown, ChevronRight, Calendar, Receipt, ChevronDown, Users, Image as ImageIcon } from 'lucide-react-native';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
@@ -36,6 +37,8 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
   
   // 상태 관리
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [monthlyTotal, setMonthlyTotal] = useState({ income: 0, expense: 0 });
   const [monthlyTransactions, setMonthlyTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,11 +75,16 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         return;
       }
 
-      // 사용자가 속한 그룹 목록 조회 (첫 번째 그룹 사용)
+      // 사용자가 속한 그룹 목록 조회
       const groups = await groupService.getByUser(user.uid);
       console.log('HomeScreen: 사용자 그룹 수:', groups.length);
+      setAllGroups(groups);
+      
       if (groups.length > 0) {
-        const group = groups[0];
+        // 현재 그룹이 없거나 목록에 없으면 첫 번째 그룹 선택
+        const group = currentGroup && groups.find(g => g.id === currentGroup.id) 
+          ? currentGroup 
+          : groups[0];
         console.log('HomeScreen: 선택된 그룹:', group.id, group.name);
         setCurrentGroup(group);
 
@@ -177,8 +185,56 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
    * 모임 스위처 클릭 핸들러
    */
   const handleGroupSwitch = () => {
-    // TODO: 모임 목록 화면으로 이동
-    Alert.alert('모임 전환', '모임 전환 기능이 곧 추가됩니다!');
+    if (allGroups.length <= 1) {
+      Alert.alert('알림', '전환할 수 있는 다른 모임이 없습니다.');
+      return;
+    }
+    setShowGroupSelector(true);
+  };
+
+  /**
+   * 모임 선택 핸들러
+   */
+  const handleGroupSelect = async (group: Group) => {
+    setShowGroupSelector(false);
+    if (group.id === currentGroup?.id) return;
+    
+    setCurrentGroup(group);
+    setLoading(true);
+    
+    try {
+      // 새 그룹의 데이터 로드
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      
+      const monthlyTransactions = await transactionService.getByMonth(
+        group.id, 
+        currentYear, 
+        currentMonth
+      );
+
+      setMonthlyTransactions(monthlyTransactions);
+
+      const income = monthlyTransactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const expense = monthlyTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      setMonthlyTotal({ income, expense });
+
+      const budgetSummary = await budgetService.getBudgetSummary(group.id, budgetYear, budgetMonth);
+      setBudgetSummary(budgetSummary);
+      
+    } catch (error) {
+      console.error('그룹 전환 오류:', error);
+      Alert.alert('오류', '모임 데이터를 불러올 수 없습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -368,12 +424,30 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     <SafeAreaView style={styles.container}>
       {/* 상단 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.groupSwitcher} onPress={handleGroupSwitch}>
-          <Text style={styles.groupName}>
-            {currentGroup?.name || '모임 선택'}
-          </Text>
-          <Text style={styles.switchIcon}>⌄</Text>
-        </TouchableOpacity>
+        <View style={styles.headerLeft}>
+          {/* 앱 아이콘 */}
+          <View style={styles.appIconContainer}>
+            <Image 
+              source={require('../../assets/icon.png')} 
+              style={styles.appIcon}
+              resizeMode="contain"
+            />
+          </View>
+          
+          {/* 모임 선택기 */}
+          <TouchableOpacity style={styles.groupSwitcher} onPress={handleGroupSwitch}>
+            <View style={styles.groupInfo}>
+              <Text style={styles.groupName}>
+                {currentGroup?.name || '모임 선택'}
+              </Text>
+              <Text style={styles.groupMemberCount}>
+                {allGroups.length}개 모임
+              </Text>
+            </View>
+            <ChevronDown size={16} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </View>
+        
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
             <Bell size={20} color={COLORS.text} />
@@ -718,6 +792,56 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
         onDeleteTransaction={handleDeleteTransaction}
       />
 
+      {/* 모임 선택 모달 */}
+      {showGroupSelector && (
+        <View style={styles.groupSelectorOverlay}>
+          <TouchableOpacity 
+            style={styles.groupSelectorBackdrop}
+            onPress={() => setShowGroupSelector(false)}
+          />
+          <View style={styles.groupSelectorModal}>
+            <View style={styles.groupSelectorHeader}>
+              <Text style={styles.groupSelectorTitle}>모임 선택</Text>
+            </View>
+            
+            <ScrollView style={styles.groupList}>
+              {allGroups.map((group) => (
+                <TouchableOpacity
+                  key={group.id}
+                  style={[
+                    styles.groupItem,
+                    group.id === currentGroup?.id && styles.selectedGroupItem
+                  ]}
+                  onPress={() => handleGroupSelect(group)}
+                >
+                  <View style={styles.groupItemLeft}>
+                    <View style={styles.groupItemIcon}>
+                      <Users size={20} color={group.id === currentGroup?.id ? COLORS.primary : COLORS.textSecondary} />
+                    </View>
+                    <View style={styles.groupItemInfo}>
+                      <Text style={[
+                        styles.groupItemName,
+                        group.id === currentGroup?.id && styles.selectedGroupItemName
+                      ]}>
+                        {group.name}
+                      </Text>
+                      <Text style={styles.groupItemDescription}>
+                        {group.description || '모임 설명 없음'}
+                      </Text>
+                    </View>
+                  </View>
+                  {group.id === currentGroup?.id && (
+                    <View style={styles.selectedIndicator}>
+                      <Text style={styles.selectedIndicatorText}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
       {/* 플로팅 기록하기 버튼 */}
       <TouchableOpacity style={styles.floatingButton} onPress={handleQuickAdd}>
         <Edit3 size={28} color="white" />
@@ -757,6 +881,22 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     minHeight: 60,
   },
+
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  appIconContainer: {
+    marginRight: 12,
+  },
+
+  appIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+  },
   groupSwitcher: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -764,17 +904,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: COLORS.surfaceSecondary,
     borderRadius: 12,
+    flex: 1,
+    marginRight: 12,
   },
+
+  groupInfo: {
+    flex: 1,
+  },
+
   groupName: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
-    marginRight: 8,
+    marginBottom: 2,
   },
-  switchIcon: {
-    fontSize: 10,
+
+  groupMemberCount: {
+    fontSize: 12,
     color: COLORS.textSecondary,
-    fontWeight: '500',
   },
   notificationButton: {
     position: 'relative',
@@ -1139,6 +1286,115 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 8,
     textAlign: 'center',
+  },
+
+  // 모임 선택 모달
+  groupSelectorOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+  },
+
+  groupSelectorBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+
+  groupSelectorModal: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    maxHeight: 400,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+
+  groupSelectorHeader: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  groupSelectorTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+
+  groupList: {
+    maxHeight: 300,
+  },
+
+  groupItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  selectedGroupItem: {
+    backgroundColor: COLORS.primary + '10',
+  },
+
+  groupItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  groupItemIcon: {
+    marginRight: 12,
+  },
+
+  groupItemInfo: {
+    flex: 1,
+  },
+
+  groupItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+
+  selectedGroupItemName: {
+    color: COLORS.primary,
+  },
+
+  groupItemDescription: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+
+  selectedIndicator: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  selectedIndicatorText: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: 'bold',
   },
 
 
