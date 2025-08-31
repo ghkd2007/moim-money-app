@@ -17,6 +17,7 @@ import { groupService, userService, transactionService } from '../services/dataS
 import { Group, User, Transaction } from '../types';
 import CategoryManagementModal from '../components/CategoryManagementModal';
 import { useGlobalContext } from '../contexts/GlobalContext';
+import { useNavigation } from '@react-navigation/native';
 
 interface MemberStats extends User {
   isOwner: boolean;
@@ -31,6 +32,7 @@ interface MemberStats extends User {
 const GroupScreen: React.FC = () => {
   // 전역 컨텍스트 사용
   const { refreshTrigger } = useGlobalContext();
+  const navigation = useNavigation();
   
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
@@ -200,23 +202,8 @@ const GroupScreen: React.FC = () => {
    * 새 모임 추가 핸들러
    */
   const handleAddNewGroup = () => {
-    Alert.alert(
-      '새 모임 만들기',
-      '새로운 모임을 만드시겠습니까?',
-      [
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-        {
-          text: '만들기',
-          onPress: () => {
-            // TODO: 모임 생성 화면으로 이동
-            Alert.alert('준비 중', '모임 생성 기능은 곧 추가됩니다!');
-          },
-        },
-      ]
-    );
+    // GroupSelectionScreen으로 이동 (모임 생성 모드)
+    navigation.navigate('GroupSelection' as never);
   };
 
 

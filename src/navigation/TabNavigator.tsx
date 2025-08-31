@@ -1,6 +1,7 @@
 // 하단 탭 네비게이션 - Dribbble 스타일 다크 테마
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../constants';
@@ -8,8 +9,41 @@ import { COLORS } from '../constants';
 import HomeScreen from '../screens/HomeScreen';
 import GroupScreen from '../screens/GroupScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import GroupSelectionScreen from '../screens/GroupSelectionScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Group Stack Navigator
+const GroupStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: COLORS.surface,
+        },
+        headerTintColor: COLORS.text,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+      }}
+    >
+      <Stack.Screen 
+        name="GroupMain" 
+        component={GroupScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="GroupSelection" 
+        component={GroupSelectionScreen} 
+        options={{ 
+          title: '새 모임 만들기',
+          headerBackTitleVisible: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
 
 // Lucide 스타일 아이콘 컴포넌트 - 글래스모피즘 효과
 const HomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
@@ -110,7 +144,7 @@ const TabNavigator: React.FC = () => {
 
       <Tab.Screen
         name="Group"
-        component={GroupScreen}
+        component={GroupStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <GroupIcon color={color} focused={focused} />

@@ -10,15 +10,17 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../constants';
 import { groupService } from '../services/dataService';
 import { getCurrentUser } from '../services/authService';
 
 interface GroupSelectionScreenProps {
-  onGroupSelected: (groupId: string) => void;
+  onGroupSelected?: (groupId: string) => void;
 }
 
 const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSelected }) => {
+  const navigation = useNavigation();
   const [mode, setMode] = useState<'selection' | 'create' | 'join'>('selection');
   const [loading, setLoading] = useState(false);
   
@@ -59,16 +61,25 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
 
       const groupId = await groupService.create(groupData);
       
-      // Alert 대신 바로 다음 화면으로 이동
-      onGroupSelected(groupId);
-      
-      // 성공 메시지는 나중에 홈 화면에서 표시
-      setTimeout(() => {
-        Alert.alert(
-          '모임 생성 완료!', 
-          `"${groupName.trim()}" 모임이 생성되었습니다.\n참여 코드: ${inviteCode}\n\n이 코드를 공유하여 다른 멤버들을 초대하세요!`
-        );
-      }, 500);
+      // 모임 생성 성공 메시지
+      Alert.alert(
+        '모임 생성 완료!', 
+        `"${groupName.trim()}" 모임이 생성되었습니다.\n참여 코드: ${inviteCode}\n\n이 코드를 공유하여 다른 멤버들을 초대하세요!`,
+        [
+          {
+            text: '확인',
+            onPress: () => {
+              if (onGroupSelected) {
+                // App.tsx에서 호출된 경우 (최초 모임 생성)
+                onGroupSelected(groupId);
+              } else {
+                // Stack Navigator에서 호출된 경우 (추가 모임 생성)
+                navigation.goBack();
+              }
+            }
+          }
+        ]
+      );
     } catch (error) {
       console.error('모임 생성 오류:', error);
       Alert.alert('오류', `모임 생성 중 오류가 발생했습니다: ${error}`);
@@ -105,8 +116,18 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
 
       // 이미 참여한 모임인지 확인
       if (group.members.includes(user.uid)) {
-        Alert.alert('알림', '이미 참여한 모임입니다.');
-        onGroupSelected(group.id);
+        Alert.alert('알림', '이미 참여한 모임입니다.', [
+          {
+            text: '확인',
+            onPress: () => {
+              if (onGroupSelected) {
+                onGroupSelected(group.id);
+              } else {
+                navigation.goBack();
+              }
+            }
+          }
+        ]);
         setLoading(false);
         return;
       }
@@ -114,16 +135,25 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
       // 모임에 멤버 추가
       await groupService.addMember(group.id, user.uid);
       
-      // Alert 대신 바로 다음 화면으로 이동
-              onGroupSelected(group.id);
-      
-      // 성공 메시지는 나중에 홈 화면에서 표시
-      setTimeout(() => {
-        Alert.alert(
-          '모임 참여 완료!',
-          `"${group.name}" 모임에 참여했습니다.`
-        );
-      }, 500);
+      // 모임 참여 성공 메시지
+      Alert.alert(
+        '모임 참여 완료!',
+        `"${group.name}" 모임에 참여했습니다!`,
+        [
+          {
+            text: '확인',
+            onPress: () => {
+              if (onGroupSelected) {
+                // App.tsx에서 호출된 경우 (최초 모임 참여)
+                onGroupSelected(group.id);
+              } else {
+                // Stack Navigator에서 호출된 경우 (추가 모임 참여)
+                navigation.goBack();
+              }
+            }
+          }
+        ]
+      );
     } catch (error) {
       console.error('모임 참여 오류:', error);
       Alert.alert('오류', '모임 참여 중 오류가 발생했습니다.');
