@@ -218,6 +218,7 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
         <TextInput
           style={styles.input}
           placeholder="모임명 (예: 대학 동기 모임, 회사 팀 등)"
+          placeholderTextColor={COLORS.textSecondary}
           value={groupName}
           onChangeText={setGroupName}
           maxLength={30}
@@ -255,6 +256,7 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
         <TextInput
           style={styles.input}
           placeholder="6자리 참여 코드 (예: ABC123)"
+          placeholderTextColor={COLORS.textSecondary}
           value={joinCode}
           onChangeText={setJoinCode}
           maxLength={6}
@@ -290,7 +292,7 @@ const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({ onGroupSele
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
     padding: 20,
   },
   header: {
@@ -339,15 +341,15 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   actionButton: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#2A2D3A',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   createButton: {
     borderWidth: 2,
@@ -377,12 +379,13 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   input: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#2A2D3A',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    color: COLORS.text,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
   },
   submitButton: {
     backgroundColor: COLORS.primary,
@@ -391,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   disabledButton: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: COLORS.surfaceSecondary,
   },
   submitButtonText: {
     color: 'white',
