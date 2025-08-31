@@ -19,7 +19,7 @@ import QuickAddModal from '../components/QuickAddModal';
 import DailyTransactionModal from '../components/DailyTransactionModal';
 import SMSAutoExpenseModal from '../components/SMSAutoExpenseModal';
 import TransactionListModal from '../components/TransactionListModal';
-import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown, ChevronRight, Calendar, Receipt, ChevronDown, Users, Image as ImageIcon } from 'lucide-react-native';
+import { Bell, DollarSign, Edit3, Smartphone, TrendingUp, TrendingDown, ChevronRight, Calendar, Receipt, ChevronDown, Users, Image as ImageIcon, Plus } from 'lucide-react-native';
 
 import { transactionService, groupService, budgetService } from '../services/dataService';
 import { getCurrentUser, logout } from '../services/authService';
@@ -235,6 +235,30 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * 모임 추가 핸들러
+   */
+  const handleAddGroup = () => {
+    setShowGroupSelector(false);
+    Alert.alert(
+      '새 모임 만들기',
+      '새로운 모임을 만드시겠습니까?',
+      [
+        {
+          text: '취소',
+          style: 'cancel',
+        },
+        {
+          text: '만들기',
+          onPress: () => {
+            // TODO: 모임 생성 화면으로 이동 또는 모달 표시
+            Alert.alert('준비 중', '모임 생성 기능은 곧 추가됩니다!');
+          },
+        },
+      ]
+    );
   };
 
   /**
@@ -837,6 +861,26 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                   )}
                 </TouchableOpacity>
               ))}
+              
+              {/* 모임 추가 버튼 */}
+              <TouchableOpacity
+                style={styles.addGroupItem}
+                onPress={handleAddGroup}
+              >
+                <View style={styles.groupItemLeft}>
+                  <View style={styles.addGroupIcon}>
+                    <Plus size={20} color={COLORS.primary} />
+                  </View>
+                  <View style={styles.groupItemInfo}>
+                    <Text style={styles.addGroupText}>
+                      새 모임 만들기
+                    </Text>
+                    <Text style={styles.addGroupDescription}>
+                      친구들과 새로운 모임을 시작해보세요
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -1395,6 +1439,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  // 모임 추가 버튼
+  addGroupItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderTopWidth: 2,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+  },
+
+  addGroupIcon: {
+    marginRight: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  addGroupText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginBottom: 2,
+  },
+
+  addGroupDescription: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
   },
 
 
