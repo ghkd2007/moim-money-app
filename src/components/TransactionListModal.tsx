@@ -101,11 +101,17 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
           <Text style={styles.transactionDescription}>
             {transaction.description || transaction.memo || transaction.categoryId}
           </Text>
-          <Text style={styles.transactionCategory}>
-            {transaction.categoryId}
-          </Text>
+          {(transaction.description || transaction.memo) && (
+            <Text style={styles.transactionCategory}>
+              {transaction.categoryId}
+            </Text>
+          )}
           <Text style={styles.transactionDate}>
-            {formatDate(new Date(transaction.date))}
+            {formatDate(new Date(transaction.date))} {new Date(transaction.date).toLocaleTimeString('ko-KR', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: false 
+            })}
           </Text>
         </View>
       </View>
@@ -122,7 +128,7 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={true}
+      transparent={false}
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
@@ -243,9 +249,6 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
             <View style={styles.bottomSpacing} />
           </ScrollView>
         </View>
-
-        {/* 배경 터치 시 닫기 */}
-        <Pressable style={styles.backdrop} onPress={onClose} />
       </View>
     </Modal>
   );
@@ -254,16 +257,12 @@ const TransactionListModal: React.FC<TransactionListModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: COLORS.background,
   },
   
   modalContainer: {
+    flex: 1,
     backgroundColor: COLORS.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
-    minHeight: '70%',
   },
   
   header: {
@@ -492,15 +491,6 @@ const styles = StyleSheet.create({
   
   bottomSpacing: {
     height: 20,
-  },
-  
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: -1,
   },
 });
 

@@ -633,8 +633,17 @@ const HomeScreen: React.FC<HomeScreenProps> = () => {
                         <Text style={styles.transactionDescription}>
                           {transaction.description || transaction.memo || transaction.categoryId}
                         </Text>
+                        {(transaction.description || transaction.memo) && (
+                          <Text style={styles.transactionCategory}>
+                            {transaction.categoryId}
+                          </Text>
+                        )}
                         <Text style={styles.transactionDate}>
-                          {formatDate(new Date(transaction.date))}
+                          {formatDate(new Date(transaction.date))} {new Date(transaction.date).toLocaleTimeString('ko-KR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                          })}
                         </Text>
                       </View>
                     </View>
@@ -1087,6 +1096,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+    marginBottom: 2,
+  },
+
+  transactionCategory: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
     marginBottom: 2,
   },
 
